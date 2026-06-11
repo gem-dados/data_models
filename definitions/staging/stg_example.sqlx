@@ -1,0 +1,16 @@
+-- Camada STAGING: limpeza/normalizacao da fonte raw.
+config {
+  type: "view",
+  schema: "staging",
+  description: "Normaliza raw.example.",
+  assertions: {
+    nonNull: ["id"],
+    uniqueKey: ["id"]
+  }
+}
+
+SELECT
+  CAST(id AS INT64)        AS id,
+  CAST(value AS STRING)    AS value,
+  CURRENT_TIMESTAMP()      AS loaded_at
+FROM ${ref("example")}

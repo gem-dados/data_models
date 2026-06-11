@@ -1,0 +1,11 @@
+# Config do Dataform Core.
+# defaultProject vem por VARIAVEL injetada pela execucao (stg vs prd), para
+# o MESMO codigo materializar em gem-dados-lake-stg ou -prd.
+defaultProject: gem-dados-lake-stg
+defaultLocation: US
+defaultDataset: staging
+defaultAssertionDataset: dataform_assertions
+dataformCoreVersion: 3.0.0
+
+vars:
+  env: stg

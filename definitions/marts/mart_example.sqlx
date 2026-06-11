@@ -1,0 +1,12 @@
+-- Camada MARTS: modelo final para consumo (tabela materializada).
+config {
+  type: "table",
+  schema: "marts",
+  description: "Exemplo de mart agregado pronto para consumo."
+}
+
+SELECT
+  value,
+  COUNT(*) AS qtd
+FROM ${ref("stg_example")}
+GROUP BY value

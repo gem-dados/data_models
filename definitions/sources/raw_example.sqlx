@@ -1,0 +1,9 @@
+-- Declara uma fonte que vive na camada RAW (preenchida pelo data_ingestion).
+-- 'declaration' nao cria nada: so registra a tabela para o Dataform referenciar.
+config {
+  type: "declaration",
+  database: dataform.projectConfig.defaultProject,
+  schema: "raw",
+  name: "example",
+  description: "Dados crus de exemplo gravados pelo job de ingestao."
+}
