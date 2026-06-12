@@ -44,20 +44,35 @@ data_models/
 
 ---
 
-## Desenvolver
+## Desenvolver (GCP-nativo — não Dataform Core CLI)
 
-**Recomendado:** workspace do Dataform no Console GCP (ligado a este repo pelo
-`cloud_iac`) — compila e roda contra o BigQuery sem setup local.
+**Use o development workspace do Dataform no Console GCP** (já ligado a este
+repo pelo `cloud_iac`): é um ambiente editável tipo IDE/branch, compila e roda
+contra o BigQuery sem setup local. Promoção é por **git/PR**, igual ao resto da
+plataforma.
 
-**CLI local** (opcional):
-```bash
-npm i -g @dataform/cli
-dataform compile
-dataform run --dry-run        # valida sem materializar
+> Evitamos o agendador/CLI do **Dataform Core legado**. O `workflow_settings.yaml`
+> já é o formato GCP novo.
+
+---
+
+## Execução (agendada, GCP-nativo)
+
+Quem executa em produção **não** é o workspace — é uma **orquestração gerida
+pelo `cloud_iac`**:
+
+```
+Cloud Scheduler (cron diário)  →  Cloud Workflows  →  Dataform API
+   compila o repo (branch do ambiente)  →  cria o workflowInvocation
+   →  executa no BigQuery como a SA `dataform-runner`
 ```
 
-> A credencial local fica em `.df-credentials.json` — **já está no
-> `.gitignore`**. Nunca commite.
+- Por quê assim (e não o agendador nativo do Dataform): os repos têm
+  `strictActAsChecks` ligado (padrão seguro) → exige SA de execução explícita e
+  bloqueia o autorelease nativo. Este é o **padrão recomendado pela Google**.
+- Cada ambiente tem seu schedule: `stg` compila a branch `stg`, `prd` a `main`.
+- Rodar sob demanda: dispare o Workflow `dataform-<env>` no Console (ou
+  `workflowExecutions.create` via API).
 
 ---
 
@@ -67,7 +82,7 @@ dataform run --dry-run        # valida sem materializar
 2. Crie a view de `staging/` referenciando a fonte com `${ref("nome")}`.
 3. Crie a tabela de `marts/` agregando o staging.
 4. Adicione **assertions** (nonNull, uniqueKey) para qualidade.
-5. PR → valida em `stg` → PR para `main` (prd).
+5. PR → valida em `stg` → PR para `main` (prd) → roda no próximo schedule.
 
 ---
 
