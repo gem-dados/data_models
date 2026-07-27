@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: dataform.projectConfig.defaultProject,
+  schema: "raw",
+  name: "raw_program_activity",
+  description: "Dados crus de atividades e resumo por programa/trilha (origem: resumo_por_programa_export)."
+}
