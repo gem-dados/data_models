@@ -1,0 +1,30 @@
+config {
+    type: "view",
+    schema: "staging",
+    description: "Normaliza raw.skill_assessments. Padroniza strings e remove nulos críticos.",
+    assertions: {
+        nonNull: ["useremail"],
+        uniqueKey: ["useremail", "assessment_slug"]
+    }
+}
+
+SELECT
+  -- Padronização de Strings
+  LOWER(TRIM(CAST(email AS STRING))) AS useremail,
+  TRIM(CAST(username AS STRING)) AS username,
+  TRIM(CAST(teams AS STRING)) AS teams,
+  TRIM(CAST(assessment_name AS STRING)) AS assessment_name,
+  TRIM(CAST(assessment_slug AS STRING)) AS assessment_slug,
+  CAST(date_started AS TIMESTAMP) AS date_started,
+  CAST(date_completed AS TIMESTAMP) AS date_completed,
+  CAST(reported_score AS INT64) AS reported_score,
+  CAST(reported_percentile AS INT64) AS reported_percentile,
+  TRIM(CAST(reported_knowledge_level AS STRING)) AS reported_knowledge_level,
+  CAST(attempt_number AS INT64) AS attempt_number,
+  CURRENT_TIMESTAMP() AS loaded_at
+FROM
+  ${ref("raw_skill_assessments")}
+  -- Remoção de valores nulos críticos
+WHERE
+  email IS NOT NULL
+  AND TRIM(email) <> ""

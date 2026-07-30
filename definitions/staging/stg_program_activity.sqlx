@@ -1,0 +1,39 @@
+config {
+    type: "view",
+    schema: "staging",
+    description: "Normaliza raw.program_activity. Padroniza strings e remove nulos críticos.",
+    assertions: {
+        nonNull: ["useremail"],
+        uniqueKey: ["useremail", "trackid"]
+    }
+}
+
+SELECT
+  -- Padronização de Strings
+  INITCAP(TRIM(CAST(firstname AS STRING))) AS firstname,
+  INITCAP(TRIM(CAST(lastname AS STRING))) AS lastname,
+  LOWER(TRIM(CAST(useremail AS STRING))) AS useremail,
+  TRIM(CAST(teams AS STRING)) AS teams,
+  CAST(trackid AS INT64) AS trackid,
+  CAST(trackversionid AS INT64) AS trackversionid,
+  TRIM(CAST(tracktitle AS STRING)) AS tracktitle,
+  TRIM(CAST(technology AS STRING)) AS technology,
+  CAST(startedat AS TIMESTAMP) AS startedat,
+  CAST(completedat AS TIMESTAMP) AS completedat,
+  CAST(xp_earned AS FLOAT64) AS xp_earned,
+  CAST(hours_spent AS FLOAT64) AS hours_spent,
+  CAST(numcourses AS INT64) AS numcourses,
+  CAST(numcoursescompleted AS INT64) AS numcoursescompleted,
+  CAST(numchapters AS INT64) AS numchapters,
+  CAST(numchapterscompleted AS INT64) AS numchapterscompleted,
+  CAST(numprojects AS INT64) AS numprojects,
+  CAST(numprojectscompleted AS INT64) AS numprojectscompleted,
+  CAST(numassessments AS INT64) AS numassessments,
+  CAST(numassessmentscompleted AS INT64) AS numassessmentscompleted,
+  CURRENT_TIMESTAMP() AS loaded_at
+FROM
+  ${ref("raw_program_activity")}
+  -- Remoção de valores nulos críticos
+WHERE
+  useremail IS NOT NULL
+  AND TRIM(useremail) <> ""
