@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: dataform.projectConfig.defaultProject,
+  schema: "raw",
+  name: "raw_time_spent",
+  description: "Dados crus do tempo dedicado ao aprendizado (origem: tempo_no_aprendizado_export)."
+}

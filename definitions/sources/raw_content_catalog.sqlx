@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: dataform.projectConfig.defaultProject,
+  schema: "raw",
+  name: "raw_content_catalog",
+  description: "Dados crus do catálogo de conteúdos disponíveis (origem: catalogo_de_conteudo_export)."
+}

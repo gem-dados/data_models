@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: dataform.projectConfig.defaultProject,
+  schema: "raw",
+  name: "raw_skill_assessments",
+  description: "Dados crus das avaliações de habilidades (origem: avaliacao_de_habilidades_export)."
+}

@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: dataform.projectConfig.defaultProject,
+  schema: "raw",
+  name: "raw_team_history",
+  description: "Dados crus do histórico de movimentação das equipes (origem: historico_da_equipe_export)."
+}

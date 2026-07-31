@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: dataform.projectConfig.defaultProject,
+  schema: "raw",
+  name: "raw_members",
+  description: "Dados crus de membros e licenças (origem: membros_export)."
+}
