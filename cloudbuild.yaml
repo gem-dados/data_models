@@ -1,0 +1,36 @@
+# =============================================================================
+# Esteira do data_models (Dataform): push na branch -> dispara o Cloud Workflow
+# dataform-<env>, que compila a branch do ambiente e executa no BigQuery como
+# a SA dataform-runner. Branch por ambiente (igual ao cloud_iac):
+#   push 'stg'  -> _ENV=stg  -> workflow dataform-stg  -> gem-dados-lake-stg
+#   push 'main' -> _ENV=prd  -> workflow dataform-prd  -> gem-dados-lake-prd
+#
+# A infra (repo Dataform, Workflow, Scheduler, SAs) e criada pelo cloud_iac.
+# Aqui so acionamos o Workflow na hora do merge; o Cloud Scheduler segue como
+# backstop diario.
+# =============================================================================
+substitutions:
+  _ENV: stg
+  _REGION: us-central1
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # 1) Guardrail: bloqueia segredo commitado antes de qualquer coisa.
+  - id: gitleaks
+    name: zricethezav/gitleaks:latest
+    args: ["detect", "--source=.", "--no-banner", "--redact", "--verbose"]
+
+  # 2) Dispara o Workflow do Dataform (compila a branch + executa no BigQuery).
+  #    `gcloud workflows run` aguarda o Workflow retornar (a criacao do
+  #    workflowInvocation) e imprime o nome da invocacao no log do build.
+  - id: trigger-dataform
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - workflows
+      - run
+      - dataform-${_ENV}
+      - --location=${_REGION}
+      - --project=${PROJECT_ID}
