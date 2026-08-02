@@ -1,0 +1,24 @@
+config {
+    type: "view",
+    schema: "staging",
+    description: "Normaliza raw.team_history. Padroniza strings e remove nulos críticos.",
+    assertions: {
+        nonNull: ["useremail"],
+        uniqueKey: ["useremail", "eventtime", "eventtype"]
+    }
+}
+
+SELECT
+  -- Padronização de Strings
+  SAFE_CAST(eventtime AS TIMESTAMP) AS eventtime,
+  TRIM(CAST(eventtype AS STRING)) AS eventtype,
+  TRIM(CAST(eventtargettype AS STRING)) AS eventtargettype,
+  TRIM(CAST(teamdata AS STRING)) AS teamdata,
+  LOWER(TRIM(CAST(userdata AS STRING))) AS useremail,
+  CURRENT_TIMESTAMP() AS loaded_at
+FROM
+  ${ref("raw_team_history")}
+  -- Remoção de valores nulos críticos
+WHERE
+  userdata IS NOT NULL
+  AND TRIM(userdata) <> ""

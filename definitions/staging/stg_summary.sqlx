@@ -1,0 +1,40 @@
+config {
+    type: "view",
+    schema: "staging",
+    description: "Normaliza raw.summary. Padroniza strings e remove nulos críticos.",
+    assertions: {
+        nonNull: ["useremail"],
+        uniqueKey: ["useremail"]
+    }
+}
+
+SELECT
+  -- Padronização de Strings
+  INITCAP(TRIM(CAST(firstname AS STRING))) AS firstname,
+  INITCAP(TRIM(CAST(lastname AS STRING))) AS lastname,
+  LOWER(TRIM(CAST(useremail AS STRING))) AS useremail,
+  TRIM(CAST(username AS STRING)) AS username,
+  TRIM(CAST(teams AS STRING)) AS teams,
+  CAST(dateuserjoinedgroup AS TIMESTAMP) AS dateuserjoinedgroup,
+  SAFE_CAST(dateuserleftgroup AS TIMESTAMP) AS dateuserleftgroup,
+  CAST(totalxp AS INT64) AS totalxp,
+  CAST(dateoflastxpearned AS TIMESTAMP) AS dateoflastxpearned,
+  CAST(numexercisescompleted AS INT64) AS numexercisescompleted,
+  CAST(numchapterscompleted AS INT64) AS numchapterscompleted,
+  CAST(numcoursescompleted AS INT64) AS numcoursescompleted,
+  CAST(numtrackscompleted AS INT64) AS numtrackscompleted,
+  CAST(numpractisescompleted AS INT64) AS numpractisescompleted,
+  CAST(numprojectscompleted AS INT64) AS numprojectscompleted,
+  CAST(numassessmentscompleted AS INT64) AS numassessmentscompleted,
+  TRIM(CAST(completedcourses AS STRING)) AS completedcourses,
+  TRIM(CAST(completedtracks AS STRING)) AS completedtracks,
+  TRIM(CAST(completedpractises AS STRING)) AS completedpractises,
+  TRIM(CAST(completedprojects AS STRING)) AS completedprojects,
+  TRIM(CAST(completedassessments AS STRING)) AS completedassessments,
+  CURRENT_TIMESTAMP() AS loaded_at
+FROM
+  ${ref("raw_summary")}
+  -- Remoção de valores nulos críticos
+WHERE
+  useremail IS NOT NULL
+  AND TRIM(useremail) <> ""

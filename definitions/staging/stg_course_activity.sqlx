@@ -1,0 +1,40 @@
+config {
+    type: "view",
+    schema: "staging",
+    description: "Normaliza raw.course_activity. Padroniza strings e remove nulos críticos.",
+    assertions: {
+        nonNull: ["useremail"],
+        uniqueKey: ["useremail", "courseid"]
+    }
+}
+
+SELECT
+  -- Padronização de Strings
+  INITCAP(TRIM(CAST(firstname AS STRING))) AS firstname,
+  INITCAP(TRIM(CAST(lastname AS STRING))) AS lastname,
+  LOWER(TRIM(CAST(useremail AS STRING))) AS useremail,
+  TRIM(CAST(username AS STRING)) AS username,
+  TRIM(CAST(teams AS STRING)) AS teams,
+  CAST(joinedgroup AS TIMESTAMP) AS joinedgroup,
+  CAST(leftgroup AS TIMESTAMP) AS leftgroup,
+  CAST(courseid AS INT64) AS courseid,
+  TRIM(CAST(coursename AS STRING)) AS coursename,
+  TRIM(CAST(technology AS STRING)) AS technology,
+  CAST(startedcourse AS TIMESTAMP) AS startedcourse,
+  CAST(finishedcourse AS TIMESTAMP) AS finishedcourse,
+  CAST(skippedcourse AS TIMESTAMP) AS skippedcourse,
+  CAST(lastvisitedcourse AS TIMESTAMP) AS lastvisitedcourse,
+  CAST(completedcourseexercises AS FLOAT64) AS completedcourseexercises,
+  CAST(coursecompletionrate AS FLOAT64) AS coursecompletionrate,
+  TRIM(CAST(coursestatus AS STRING)) AS coursestatus,
+  CAST(totalcoursexpearned AS INT64) AS totalcoursexpearned,
+  CAST(totalcoursexpavailable AS INT64) AS totalcoursexpavailable,
+  CAST(xpscore AS FLOAT64) AS xpscore,
+  TRIM(CAST(coursestate AS STRING)) AS coursestate,
+  CURRENT_TIMESTAMP() AS loaded_at
+FROM
+  ${ref("raw_course_activity")}
+  -- Remoção de valores nulos críticos
+WHERE
+  useremail IS NOT NULL
+  AND TRIM(useremail) <> ""

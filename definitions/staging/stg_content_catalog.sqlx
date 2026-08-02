@@ -1,0 +1,31 @@
+config {
+    type: "view",
+    schema: "staging",
+    description: "Normaliza raw.content_catalog. Padroniza strings e remove nulos críticos.",
+    assertions: {
+        nonNull: ["id"],
+        uniqueKey: ["id"]
+    }
+}
+
+SELECT
+  -- Padronização de Strings
+  CAST(id AS STRING) AS id,
+  TRIM(CAST(type AS STRING)) AS type,
+  TRIM(CAST(title AS STRING)) AS title,
+  TRIM(CAST(description AS STRING)) AS description,
+  TRIM(CAST(url AS STRING)) AS url,
+  TRIM(CAST(technology AS STRING)) AS technology,
+  TRIM(CAST(topic AS STRING)) AS topic,
+  TRIM(CAST(skill_level AS STRING)) AS skill_level,
+  SAFE_CAST(hours AS FLOAT64) AS hours,
+  TRIM(CAST(state AS STRING)) AS state,
+  CAST(mobile AS BOOL) AS mobile,
+  SAFE_CAST(releasedat AS TIMESTAMP) AS releasedat,
+  SAFE_CAST(lastupdatedat AS TIMESTAMP) AS lastupdatedat,
+  CURRENT_TIMESTAMP() AS loaded_at
+FROM
+  ${ref("raw_content_catalog")}
+  -- Remoção de valores nulos críticos
+WHERE
+  id IS NOT NULL
