@@ -2,8 +2,8 @@ config {
     type: "table",
     description: "Normaliza raw.team_history. Padroniza strings e remove nulos críticos.",
     assertions: {
-        nonNull: ["useremail"],
-        uniqueKey: ["useremail", "eventtime", "eventtype"]
+        nonNull: ["userdata"],
+        uniqueKey: ["userdata", "eventtime", "eventtype"]
     }
 }
 
