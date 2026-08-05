@@ -1,6 +1,5 @@
 config {
-    type: "view",
-    schema: "staging",
+    type: "table",
     description: "Normaliza raw.time_spent. Padroniza strings e remove nulos críticos.",
     assertions: {
         nonNull: ["useremail"],
@@ -10,16 +9,16 @@ config {
 
 SELECT
   -- Padronização de Strings
-  INITCAP(TRIM(CAST(firstname AS STRING))) AS firstname,
-  INITCAP(TRIM(CAST(lastname AS STRING))) AS lastname,
-  LOWER(TRIM(CAST(email AS STRING))) AS useremail,
-  CAST(alltypes AS FLOAT64) AS alltypes,
-  CAST(courses_classic AS FLOAT64) AS courses_classic,
-  CAST(courses_ai_native AS FLOAT64) AS courses_ai_native,
-  CAST(courses AS FLOAT64) AS courses,
-  CAST(assessments AS FLOAT64) AS assessments,
-  CAST(projects AS FLOAT64) AS projects,
-  CAST(practices AS FLOAT64) AS practices,
+  INITCAP(TRIM(SAFE_CAST(firstname AS STRING))) AS firstname,
+  INITCAP(TRIM(SAFE_CAST(lastname AS STRING))) AS lastname,
+  LOWER(TRIM(SAFE_CAST(email AS STRING))) AS useremail,
+  SAFE_CAST(alltypes AS FLOAT64) AS alltypes,
+  SAFE_CAST(courses_classic AS FLOAT64) AS courses_classic,
+  SAFE_CAST(courses_ai_native AS FLOAT64) AS courses_ai_native,
+  SAFE_CAST(courses AS FLOAT64) AS courses,
+  SAFE_CAST(assessments AS FLOAT64) AS assessments,
+  SAFE_CAST(projects AS FLOAT64) AS projects,
+  SAFE_CAST(practices AS FLOAT64) AS practices,
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_time_spent")}

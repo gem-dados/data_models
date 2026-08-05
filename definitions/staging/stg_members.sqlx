@@ -1,6 +1,5 @@
 config {
-    type: "view",
-    schema: "staging",
+    type: "table",
     description: "Normaliza raw.members. Padroniza strings e remove nulos críticos.",
     assertions: {
         nonNull: ["useremail"],
@@ -10,12 +9,12 @@ config {
 
 SELECT
   -- Padronização de Strings
-  LOWER(TRIM(CAST(email AS STRING))) AS useremail,
-  INITCAP(TRIM(CAST(name AS STRING))) AS name,
-  TRIM(CAST(teams AS STRING)) AS teams,
-  TRIM(CAST(role AS STRING)) AS role,
-  TRIM(CAST(learn_license AS STRING)) AS learn_license,
-  TRIM(CAST(workspace_license AS STRING)) AS workspace_license,
+  LOWER(TRIM(SAFE_CAST(email AS STRING))) AS useremail,
+  INITCAP(TRIM(SAFE_CAST(name AS STRING))) AS name,
+  TRIM(SAFE_CAST(teams AS STRING)) AS teams,
+  TRIM(SAFE_CAST(role AS STRING)) AS role,
+  TRIM(SAFE_CAST(learn_license AS STRING)) AS learn_license,
+  TRIM(SAFE_CAST(workspace_license AS STRING)) AS workspace_license,
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_members")}
