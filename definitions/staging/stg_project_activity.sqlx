@@ -1,6 +1,5 @@
 config {
-    type: "view",
-    schema: "staging",
+    type: "table",
     description: "Normaliza raw.project_activity. Padroniza strings e remove nulos críticos.",
     assertions: {
         nonNull: ["useremail"],
@@ -10,15 +9,15 @@ config {
 
 SELECT
   -- Padronização de Strings
-  INITCAP(TRIM(CAST(firstname AS STRING))) AS firstname,
-  INITCAP(TRIM(CAST(lastname AS STRING))) AS lastname,
-  LOWER(TRIM(CAST(useremail AS STRING))) AS useremail,
-  TRIM(CAST(teams AS STRING)) AS teams,
-  CAST(projectid AS INT64) AS projectid,
-  TRIM(CAST(projectname AS STRING)) AS projectname,
-  TRIM(CAST(technology AS STRING)) AS technology,
-  CAST(startedat AS TIMESTAMP) AS startedat,
-  CAST(completedat AS TIMESTAMP) AS completedat,
+  INITCAP(TRIM(SAFE_CAST(firstname AS STRING))) AS firstname,
+  INITCAP(TRIM(SAFE_CAST(lastname AS STRING))) AS lastname,
+  LOWER(TRIM(SAFE_CAST(useremail AS STRING))) AS useremail,
+  TRIM(SAFE_CAST(teams AS STRING)) AS teams,
+  SAFE_CAST(projectid AS INT64) AS projectid,
+  TRIM(SAFE_CAST(projectname AS STRING)) AS projectname,
+  TRIM(SAFE_CAST(technology AS STRING)) AS technology,
+  SAFE_CAST(startedat AS TIMESTAMP) AS startedat,
+  SAFE_CAST(completedat AS TIMESTAMP) AS completedat,
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_project_activity")}

@@ -1,6 +1,5 @@
 config {
-    type: "view",
-    schema: "staging",
+    type: "table",
     description: "Normaliza raw.content_catalog. Padroniza strings e remove nulos críticos.",
     assertions: {
         nonNull: ["id"],
@@ -10,17 +9,17 @@ config {
 
 SELECT
   -- Padronização de Strings
-  CAST(id AS STRING) AS id,
-  TRIM(CAST(type AS STRING)) AS type,
-  TRIM(CAST(title AS STRING)) AS title,
-  TRIM(CAST(description AS STRING)) AS description,
-  TRIM(CAST(url AS STRING)) AS url,
-  TRIM(CAST(technology AS STRING)) AS technology,
-  TRIM(CAST(topic AS STRING)) AS topic,
-  TRIM(CAST(skill_level AS STRING)) AS skill_level,
+  SAFE_CAST(id AS STRING) AS id,
+  TRIM(SAFE_CAST(type AS STRING)) AS type,
+  TRIM(SAFE_CAST(title AS STRING)) AS title,
+  TRIM(SAFE_CAST(description AS STRING)) AS description,
+  TRIM(SAFE_CAST(url AS STRING)) AS url,
+  TRIM(SAFE_CAST(technology AS STRING)) AS technology,
+  TRIM(SAFE_CAST(topic AS STRING)) AS topic,
+  TRIM(SAFE_CAST(skill_level AS STRING)) AS skill_level,
   SAFE_CAST(hours AS FLOAT64) AS hours,
-  TRIM(CAST(state AS STRING)) AS state,
-  CAST(mobile AS BOOL) AS mobile,
+  TRIM(SAFE_CAST(state AS STRING)) AS state,
+  SAFE_CAST(mobile AS BOOL) AS mobile,
   SAFE_CAST(releasedat AS TIMESTAMP) AS releasedat,
   SAFE_CAST(lastupdatedat AS TIMESTAMP) AS lastupdatedat,
   CURRENT_TIMESTAMP() AS loaded_at

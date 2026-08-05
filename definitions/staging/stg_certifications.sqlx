@@ -1,6 +1,5 @@
 config {
-    type: "view",
-    schema: "staging",
+    type: "table",
     description: "Normaliza raw.certifications. Padroniza strings e remove nulos críticos.",
     assertions: {
         nonNull: ["useremail"],
@@ -10,14 +9,14 @@ config {
 
 SELECT
   -- Padronização de Strings
-  INITCAP(TRIM(CAST(firstname AS STRING))) AS firstname,
-  INITCAP(TRIM(CAST(lastname AS STRING))) AS lastname,
-  LOWER(TRIM(CAST(useremail AS STRING))) AS useremail,
-  TRIM(CAST(teams AS STRING)) AS teams,
-  TRIM(CAST(certificationname AS STRING)) AS certificationname,
-  CAST(startedat AS TIMESTAMP) AS startedat,
-  CAST(endedat AS TIMESTAMP) AS endedat,
-  TRIM(CAST(status AS STRING)) AS status,
+  INITCAP(TRIM(SAFE_CAST(firstname AS STRING))) AS firstname,
+  INITCAP(TRIM(SAFE_CAST(lastname AS STRING))) AS lastname,
+  LOWER(TRIM(SAFE_CAST(useremail AS STRING))) AS useremail,
+  TRIM(SAFE_CAST(teams AS STRING)) AS teams,
+  TRIM(SAFE_CAST(certificationname AS STRING)) AS certificationname,
+  SAFE_CAST(startedat AS TIMESTAMP) AS startedat,
+  SAFE_CAST(endedat AS TIMESTAMP) AS endedat,
+  TRIM(SAFE_CAST(status AS STRING)) AS status,
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_certifications")}
