@@ -19,7 +19,7 @@ SELECT
   TRIM(SAFE_CAST(technology AS STRING)) AS technology,
   SAFE_CAST(startedat AS TIMESTAMP) AS startedat,
   SAFE_CAST(completedat AS TIMESTAMP) AS completedat,
-  SAFE_CAST(pct_xp_earned AS INT64) AS pct_xp_earned,
+  SAFE_CAST(REPLACE(pct_xp_earned, '%', '') AS INT64) AS pct_xp_earned,
   SAFE_CAST(hours_spent AS FLOAT64) AS hours_spent,
   SAFE_CAST(numcourses AS INT64) AS numcourses,
   SAFE_CAST(numcoursescompleted AS INT64) AS numcoursescompleted,
