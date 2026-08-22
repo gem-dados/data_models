@@ -1,0 +1,36 @@
+config {
+  type: "table",
+  description: "Fato de progresso dos usuários nos cursos, contendo informações de atividade, conclusão, desempenho e duração.",
+  assertions: {
+    nonNull: ["useremail", "courseid"]
+  }
+}
+
+SELECT
+  useremail,
+  courseid,
+  coursename,
+  technology,
+  startedcourse,
+  finishedcourse,
+
+  TIMESTAMP_DIFF(
+    finishedcourse,
+    startedcourse,
+    MINUTE
+  ) AS durationminutes,
+
+  skippedcourse,
+  lastvisitedcourse,
+  completedcourseexercises,
+  coursecompletionrate,
+  coursestatus,
+  totalcoursexpearned,
+  totalcoursexpavailable,
+  xpscore,
+  coursestate
+
+FROM ${ref("stg_course_activity")}
+
+WHERE useremail IS NOT NULL
+  AND courseid IS NOT NULL

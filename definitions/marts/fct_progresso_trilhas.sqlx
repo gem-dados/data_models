@@ -1,0 +1,31 @@
+config {
+  type: "table",
+  description: "Fato de progresso dos usuários nas trilhas de aprendizagem, contendo informações de progresso, conclusão e horas investidas.",
+  assertions: {
+    nonNull: ["useremail", "trackid"]
+  }
+}
+
+SELECT
+  useremail,
+  trackid,
+  trackversionid,
+  tracktitle,
+  technology,
+  startedat,
+  completedat,
+  pct_xp_earned,
+  hours_spent,
+  numcourses,
+  numcoursescompleted,
+  numchapters,
+  numchapterscompleted,
+  numprojects,
+  numprojectscompleted,
+  numassessments,
+  numassessmentscompleted
+
+FROM ${ref("stg_program_activity")}
+
+WHERE useremail IS NOT NULL
+  AND trackid IS NOT NULL

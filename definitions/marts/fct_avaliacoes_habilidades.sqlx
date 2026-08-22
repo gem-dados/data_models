@@ -1,0 +1,24 @@
+config {
+  type: "table",
+  description: "Fato de avaliações de habilidades, preservando cada tentativa realizada pelos usuários.",
+  assertions: {
+    nonNull: ["useremail", "assessment_slug", "attempt_number"]
+  }
+}
+
+SELECT
+  useremail,
+  assessment_name,
+  assessment_slug,
+  date_started,
+  date_completed,
+  reported_score,
+  reported_percentile,
+  reported_knowledge_level,
+  attempt_number
+
+FROM ${ref("stg_skill_assessments")}
+
+WHERE useremail IS NOT NULL
+  AND assessment_slug IS NOT NULL
+  AND attempt_number IS NOT NULL
