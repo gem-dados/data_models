@@ -1,0 +1,38 @@
+# =============================================================================
+# Esteira de PR do data_models. NUNCA executa nada no BigQuery — so compila e
+# barra o merge. E o "portao" antes do merge, espelhando o cloudbuild-pr.yaml
+# do cloud_iac.
+#
+# `dataform compile` e estatico: nao precisa de credencial nem toca no
+# BigQuery. Ele pega o que mais quebra na pratica — SQL invalido, ${ref()}
+# apontando para modelo inexistente, dependencia circular e nome trocado.
+#
+# Mantenha branch protection exigindo este check: sem isso a validacao existe
+# mas da para mergear por cima dela.
+# =============================================================================
+substitutions:
+  _ENV: stg
+  _DATAFORM_CLI_VERSION: "^3.0.0"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # 1) Segredos commitados
+  - id: gitleaks
+    name: zricethezav/gitleaks:latest
+    args: ["detect", "--source=.", "--no-banner", "--redact", "--verbose"]
+
+  # 2) Compilacao. Usa o defaultProject do workflow_settings.yaml — para um
+  #    check de compilacao isso basta, porque nada e materializado. O override
+  #    por ambiente (defaultDatabase) so importa na execucao real, que quem faz
+  #    e o Workflow dataform-<env>.
+  - id: dataform-compile
+    name: node:20-slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        npm install -g --silent @dataform/cli@${_DATAFORM_CLI_VERSION}
+        dataform compile
