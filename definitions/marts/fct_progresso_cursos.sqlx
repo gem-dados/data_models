@@ -1,5 +1,6 @@
 config {
   type: "table",
+  schema: "marts",
   description: "Fato de progresso dos usuários nos cursos, contendo informações de atividade, conclusão, desempenho e duração.",
   assertions: {
     nonNull: ["useremail", "courseid"]

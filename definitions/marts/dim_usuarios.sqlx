@@ -1,5 +1,6 @@
 config {
   type: "table",
+  schema: "marts",
   description: "Dimensão cadastral de usuários, contendo uma linha por usuário e seus principais atributos cadastrais.",
   assertions: {
     uniqueKey: ["useremail"],
