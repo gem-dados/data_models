@@ -3,7 +3,7 @@ config {
     description: "Normaliza raw.course_activity. Padroniza strings e remove nulos críticos.",
     assertions: {
         nonNull: ["useremail"],
-        uniqueKey: ["useremail", "courseid"]
+        uniqueKey: ["useremail", "courseid", "coursename"]
     }
 }
 
