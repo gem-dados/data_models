@@ -1,0 +1,161 @@
+config {
+  type: "assertion",
+  description: "Valida se a quantidade de registros válidos da RAW corresponde à quantidade carregada na STG."
+}
+
+WITH row_counts AS (
+
+  SELECT
+    "certifications" AS table_name,
+    (
+      SELECT COUNT(*)
+      FROM ${ref("raw_certifications")}
+      WHERE useremail IS NOT NULL
+        AND TRIM(useremail) <> ""
+    ) AS raw_expected_count,
+    (
+      SELECT COUNT(*)
+      FROM ${ref("stg_certifications")}
+    ) AS stg_count
+
+  UNION ALL
+
+  SELECT
+    "content_catalog",
+    (
+      SELECT COUNT(*)
+      FROM ${ref("raw_content_catalog")}
+      WHERE id IS NOT NULL
+    ),
+    (
+      SELECT COUNT(*)
+      FROM ${ref("stg_content_catalog")}
+    )
+
+  UNION ALL
+
+  SELECT
+    "course_activity",
+    (
+      SELECT COUNT(*)
+      FROM ${ref("raw_course_activity")}
+      WHERE useremail IS NOT NULL
+        AND TRIM(useremail) <> ""
+    ),
+    (
+      SELECT COUNT(*)
+      FROM ${ref("stg_course_activity")}
+    )
+
+  UNION ALL
+
+  SELECT
+    "members",
+    (
+      SELECT COUNT(*)
+      FROM ${ref("raw_members")}
+      WHERE email IS NOT NULL
+        AND TRIM(email) <> ""
+    ),
+    (
+      SELECT COUNT(*)
+      FROM ${ref("stg_members")}
+    )
+
+  UNION ALL
+
+  SELECT
+    "program_activity",
+    (
+      SELECT COUNT(*)
+      FROM ${ref("raw_program_activity")}
+      WHERE useremail IS NOT NULL
+        AND TRIM(useremail) <> ""
+    ),
+    (
+      SELECT COUNT(*)
+      FROM ${ref("stg_program_activity")}
+    )
+
+  UNION ALL
+
+  SELECT
+    "project_activity",
+    (
+      SELECT COUNT(*)
+      FROM ${ref("raw_project_activity")}
+      WHERE useremail IS NOT NULL
+        AND TRIM(useremail) <> ""
+    ),
+    (
+      SELECT COUNT(*)
+      FROM ${ref("stg_project_activity")}
+    )
+
+  UNION ALL
+
+  SELECT
+    "skill_assessments",
+    (
+      SELECT COUNT(*)
+      FROM ${ref("raw_skill_assessments")}
+      WHERE email IS NOT NULL
+        AND TRIM(email) <> ""
+    ),
+    (
+      SELECT COUNT(*)
+      FROM ${ref("stg_skill_assessments")}
+    )
+
+  UNION ALL
+
+  SELECT
+    "summary",
+    (
+      SELECT COUNT(*)
+      FROM ${ref("raw_summary")}
+      WHERE useremail IS NOT NULL
+        AND TRIM(useremail) <> ""
+    ),
+    (
+      SELECT COUNT(*)
+      FROM ${ref("stg_summary")}
+    )
+
+  UNION ALL
+
+  SELECT
+    "team_history",
+    (
+      SELECT COUNT(*)
+      FROM ${ref("raw_team_history")}
+      WHERE userdata IS NOT NULL
+        AND TRIM(userdata) <> ""
+    ),
+    (
+      SELECT COUNT(*)
+      FROM ${ref("stg_team_history")}
+    )
+
+  UNION ALL
+
+  SELECT
+    "time_spent",
+    (
+      SELECT COUNT(*)
+      FROM ${ref("raw_time_spent")}
+      WHERE email IS NOT NULL
+        AND TRIM(email) <> ""
+    ),
+    (
+      SELECT COUNT(*)
+      FROM ${ref("stg_time_spent")}
+    )
+)
+
+SELECT
+  table_name,
+  raw_expected_count,
+  stg_count
+FROM row_counts
+WHERE raw_expected_count <> stg_count
