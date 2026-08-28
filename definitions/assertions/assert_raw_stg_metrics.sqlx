@@ -1,0 +1,115 @@
+config {
+  type: "assertion",
+  description: "Valida se métricas relevantes mantêm seus totais durante a transformação da RAW para a STG."
+}
+
+WITH metric_checks AS (
+
+  -- Catálogo de conteúdo: horas
+  SELECT
+    "content_catalog" AS table_name,
+    "hours" AS metric_name,
+    (
+      SELECT COALESCE(SUM(SAFE_CAST(hours AS FLOAT64)), 0)
+      FROM ${ref("raw_content_catalog")}
+      WHERE id IS NOT NULL
+    ) AS raw_value,
+    (
+      SELECT COALESCE(SUM(hours), 0)
+      FROM ${ref("stg_content_catalog")}
+    ) AS stg_value
+
+  UNION ALL
+
+  -- Atividade de cursos: XP obtido
+  SELECT
+    "course_activity",
+    "totalcoursexpearned",
+    (
+      SELECT COALESCE(SUM(SAFE_CAST(totalcoursexpearned AS INT64)), 0)
+      FROM ${ref("raw_course_activity")}
+      WHERE useremail IS NOT NULL
+        AND TRIM(useremail) <> ""
+    ),
+    (
+      SELECT COALESCE(SUM(totalcoursexpearned), 0)
+      FROM ${ref("stg_course_activity")}
+    )
+
+  UNION ALL
+
+  -- Atividade de programas: horas gastas
+  SELECT
+    "program_activity",
+    "hours_spent",
+    (
+      SELECT COALESCE(SUM(SAFE_CAST(hours_spent AS FLOAT64)), 0)
+      FROM ${ref("raw_program_activity")}
+      WHERE useremail IS NOT NULL
+        AND TRIM(useremail) <> ""
+    ),
+    (
+      SELECT COALESCE(SUM(hours_spent), 0)
+      FROM ${ref("stg_program_activity")}
+    )
+
+  UNION ALL
+
+  -- Avaliações: pontuação reportada
+  SELECT
+    "skill_assessments",
+    "reported_score",
+    (
+      SELECT COALESCE(SUM(SAFE_CAST(reported_score AS INT64)), 0)
+      FROM ${ref("raw_skill_assessments")}
+      WHERE email IS NOT NULL
+        AND TRIM(email) <> ""
+    ),
+    (
+      SELECT COALESCE(SUM(reported_score), 0)
+      FROM ${ref("stg_skill_assessments")}
+    )
+
+  UNION ALL
+
+  -- Resumo: XP total
+  SELECT
+    "summary",
+    "totalxp",
+    (
+      SELECT COALESCE(SUM(SAFE_CAST(totalxp AS INT64)), 0)
+      FROM ${ref("raw_summary")}
+      WHERE useremail IS NOT NULL
+        AND TRIM(useremail) <> ""
+    ),
+    (
+      SELECT COALESCE(SUM(totalxp), 0)
+      FROM ${ref("stg_summary")}
+    )
+
+  UNION ALL
+
+  -- Tempo de aprendizado: tempo total
+  SELECT
+    "time_spent",
+    "alltypes",
+    (
+      SELECT COALESCE(SUM(SAFE_CAST(alltypes AS FLOAT64)), 0)
+      FROM ${ref("raw_time_spent")}
+      WHERE email IS NOT NULL
+        AND TRIM(email) <> ""
+    ),
+    (
+      SELECT COALESCE(SUM(alltypes), 0)
+      FROM ${ref("stg_time_spent")}
+    )
+)
+
+SELECT
+  table_name,
+  metric_name,
+  raw_value,
+  stg_value,
+  raw_value - stg_value AS difference
+FROM metric_checks
+WHERE ABS(raw_value - stg_value) > 0.000001
