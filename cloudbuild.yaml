@@ -22,15 +22,30 @@ steps:
     name: zricethezav/gitleaks:latest
     args: ["detect", "--source=.", "--no-banner", "--redact", "--verbose"]
 
-  # 2) Dispara o Workflow do Dataform (compila a branch + executa no BigQuery).
-  #    `gcloud workflows run` aguarda o Workflow retornar (a criacao do
-  #    workflowInvocation) e imprime o nome da invocacao no log do build.
+  # 2) Dispara o Workflow do Dataform (compila a branch + executa no BigQuery)
+  #    e EXIGE que ele tenha terminado em SUCCEEDED.
+  #
+  #    O Workflow agora faz polling do workflowInvocation ate o estado final
+  #    (ver cloud_iac/modules/dataform_orchestration), entao o resultado dele
+  #    reflete o resultado real dos modelos. Aqui a gente checa esse resultado
+  #    explicitamente em vez de confiar no exit code do gcloud — assim o build
+  #    fica vermelho de qualquer jeito se a execucao nao der certo.
+  #
+  #    Obs: $$ escapa o cifrao para o shell; $ sozinho e substituicao do
+  #    Cloud Build.
   - id: trigger-dataform
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
-    entrypoint: gcloud
+    entrypoint: bash
     args:
-      - workflows
-      - run
-      - dataform-${_ENV}
-      - --location=${_REGION}
-      - --project=${PROJECT_ID}
+      - -c
+      - |
+        set -euo pipefail
+        ESTADO=$$(gcloud workflows run dataform-${_ENV} \
+          --location=${_REGION} \
+          --project=${PROJECT_ID} \
+          --format='value(state)')
+        echo "Execucao do Workflow terminou em: $$ESTADO"
+        if [ "$$ESTADO" != "SUCCEEDED" ]; then
+          echo "Falha: a execucao do Dataform nao terminou em SUCCEEDED." >&2
+          exit 1
+        fi
