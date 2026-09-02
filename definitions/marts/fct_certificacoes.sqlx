@@ -1,0 +1,31 @@
+config {
+  type: "table",
+  schema: "marts",
+  description: "Tabela Fato de certificações técnicas. Grão: 1 linha por usuário e certificação.",
+  columns: {
+    user_id: "Chave Estrangeira: Identificador único anonimizado do aluno",
+    certificationname: "Nome da certificação realizada",
+    startedat: "Timestamp de início da certificação",
+    endedat: "Timestamp de término da certificação",
+    status: "Status da certificação (ex: Passed, Failed, In Progress)",
+    is_certified: "Flag booleana indicando se o aluno foi aprovado (Passed)"
+  },
+  assertions: {
+    uniqueKey: ["user_id", "certificationname"],
+    nonNull: ["user_id", "certificationname"]
+  }
+}
+
+SELECT
+  user_id,
+  certificationname,
+  startedat,
+  endedat,
+  status,
+  CASE
+    WHEN LOWER(status) IN ("passed", "certified", "completed", "approved") THEN TRUE
+    ELSE FALSE
+  END AS is_certified
+FROM ${ref("stg_certifications")}
+WHERE user_id IS NOT NULL
+  AND certificationname IS NOT NULL

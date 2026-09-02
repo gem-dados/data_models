@@ -1,0 +1,57 @@
+config {
+  type: "table",
+  schema: "marts",
+  description: "Mart analítico agregado semanal para consumo da ferramenta de BI (Looker Studio / Power BI).",
+  columns: {
+    semana_inicio: "Data de início da semana de atividade (segunda-feira)",
+    alunos_ativos_semana: "Quantidade de alunos distintos com atividade na semana",
+    xp_total_semana: "Soma total de pontos de experiência gerados na semana",
+    media_xp_por_aluno_semana: "Média de XP por aluno ativo na semana",
+    cursos_concluidos_semana: "Total de cursos concluídos na semana",
+    trilhas_concluidas_semana: "Total de trilhas concluídas na semana"
+  },
+  assertions: {
+    uniqueKey: ["semana_inicio"],
+    nonNull: ["semana_inicio"]
+  }
+}
+
+WITH base_cursos AS (
+  SELECT
+    DATE_TRUNC(DATE(startedcourse), WEEK(MONDAY)) AS semana_inicio,
+    user_id,
+    totalcoursexpearned,
+    is_completed
+  FROM ${ref("fct_progresso_cursos")}
+  WHERE startedcourse IS NOT NULL
+),
+
+base_trilhas AS (
+  SELECT
+    DATE_TRUNC(DATE(startedat), WEEK(MONDAY)) AS semana_inicio,
+    user_id,
+    is_completed
+  FROM ${ref("fct_progresso_trilhas")}
+  WHERE startedat IS NOT NULL
+),
+
+semanas_distintas AS (
+  SELECT DISTINCT semana_inicio FROM base_cursos
+  UNION DISTINCT
+  SELECT DISTINCT semana_inicio FROM base_trilhas
+)
+
+SELECT
+  s.semana_inicio,
+  COUNT(DISTINCT c.user_id) AS alunos_ativos_semana,
+  COALESCE(SUM(c.totalcoursexpearned), 0) AS xp_total_semana,
+  ROUND(SAFE_DIVIDE(SUM(c.totalcoursexpearned), COUNT(DISTINCT c.user_id)), 2) AS media_xp_por_aluno_semana,
+  COUNTIF(c.is_completed = TRUE) AS cursos_concluidos_semana,
+  COUNTIF(t.is_completed = TRUE) AS trilhas_concluidas_semana
+FROM semanas_distintas s
+LEFT JOIN base_cursos c
+  ON s.semana_inicio = c.semana_inicio
+LEFT JOIN base_trilhas t
+  ON s.semana_inicio = t.semana_inicio
+WHERE s.semana_inicio IS NOT NULL
+GROUP BY s.semana_inicio

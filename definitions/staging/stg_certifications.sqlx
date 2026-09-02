@@ -1,17 +1,23 @@
 config {
-    type: "table",
-    description: "Normaliza raw.certifications. Padroniza strings e remove nulos críticos.",
-    assertions: {
-        nonNull: ["useremail"],
-        uniqueKey: ["useremail", "certificationname"]
-    }
+  type: "table",
+  description: "Normaliza raw.certifications. Padroniza tipos, remove PII (LGPD) e garante chave primária/estrangeira consistente por user_id.",
+  columns: {
+    user_id: "Identificador único anonimizado do usuário (SHA-256)",
+    teams: "Equipes ou grupos aos quais o usuário pertence",
+    certificationname: "Nome da certificação realizada",
+    startedat: "Data e hora de início da certificação",
+    endedat: "Data e hora de conclusão ou término da certificação",
+    status: "Status atual da certificação (ex: Passed, Failed, In Progress)",
+    loaded_at: "Timestamp de carga do registro na camada staging"
+  },
+  assertions: {
+    nonNull: ["user_id", "certificationname"],
+    uniqueKey: ["user_id", "certificationname"]
+  }
 }
 
 SELECT
-  -- Padronização de Strings
-  INITCAP(TRIM(SAFE_CAST(firstname AS STRING))) AS firstname,
-  INITCAP(TRIM(SAFE_CAST(lastname AS STRING))) AS lastname,
-  LOWER(TRIM(SAFE_CAST(useremail AS STRING))) AS useremail,
+  TRIM(SAFE_CAST(user_id AS STRING)) AS user_id,
   TRIM(SAFE_CAST(teams AS STRING)) AS teams,
   TRIM(SAFE_CAST(certificationname AS STRING)) AS certificationname,
   SAFE_CAST(startedat AS TIMESTAMP) AS startedat,
@@ -20,7 +26,6 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_certifications")}
-  -- Remoção de valores nulos críticos
 WHERE
-  useremail IS NOT NULL
-  AND TRIM(useremail) <> ""
+  user_id IS NOT NULL
+  AND TRIM(user_id) <> ""

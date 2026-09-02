@@ -1,55 +1,56 @@
 config {
   type: "table",
   schema: "marts",
-  description: "Dimensão cadastral de usuários, contendo uma linha por usuário e seus principais atributos cadastrais.",
+  description: "Dimensão cadastral de usuários, contendo uma linha por usuário anonimizado (SHA-256) e seus atributos cadastrais.",
+  columns: {
+    user_id: "Identificador único anonimizado do aluno (SHA-256)",
+    teams: "Equipes ou turmas às quais o usuário pertence",
+    role: "Papel/função do usuário na organização (ex: student, admin)",
+    learn_license: "Tipo de licença de aprendizado ativa",
+    workspace_license: "Tipo de licença de workspace",
+    dateuserjoinedgroup: "Timestamp da data de entrada do usuário no grupo",
+    dateuserleftgroup: "Timestamp da data de saída do usuário do grupo",
+    user_status: "Status cadastral derivado: 'active' se dateuserleftgroup for nulo, senão 'inactive'"
+  },
   assertions: {
-    uniqueKey: ["useremail"],
-    nonNull: ["useremail"]
+    uniqueKey: ["user_id"],
+    nonNull: ["user_id"]
   }
 }
 
 WITH usuarios AS (
-
   SELECT
-    useremail,
-    name,
+    user_id,
     teams,
     role,
     learn_license,
     workspace_license
   FROM ${ref("stg_members")}
-  WHERE useremail IS NOT NULL
-
+  WHERE user_id IS NOT NULL
 ),
 
 periodo_usuario AS (
-
   SELECT
-    useremail,
+    user_id,
     MIN(dateuserjoinedgroup) AS dateuserjoinedgroup,
     MAX(dateuserleftgroup) AS dateuserleftgroup
   FROM ${ref("stg_summary")}
-  WHERE useremail IS NOT NULL
-  GROUP BY useremail
-
+  WHERE user_id IS NOT NULL
+  GROUP BY user_id
 )
 
 SELECT
-  u.useremail,
-  u.name,
+  u.user_id,
   u.teams,
   u.role,
   u.learn_license,
   u.workspace_license,
   p.dateuserjoinedgroup,
   p.dateuserleftgroup,
-
   CASE
     WHEN p.dateuserleftgroup IS NULL THEN "active"
     ELSE "inactive"
   END AS user_status
-
 FROM usuarios u
-
 LEFT JOIN periodo_usuario p
-  ON u.useremail = p.useremail
+  ON u.user_id = p.user_id

@@ -1,16 +1,27 @@
 config {
-    type: "table",
-    description: "Normaliza raw.skill_assessments. Padroniza strings e remove nulos críticos.",
-    assertions: {
-        nonNull: ["useremail"],
-        uniqueKey: ["useremail", "assessment_slug"]
-    }
+  type: "table",
+  description: "Normaliza raw.skill_assessments. Avaliações de proficiência técnica dos usuários, 100% livre de PII.",
+  columns: {
+    user_id: "Identificador único anonimizado do usuário (SHA-256)",
+    teams: "Equipes ou turmas associadas ao usuário",
+    assessment_name: "Nome da avaliação de habilidade",
+    assessment_slug: "Identificador único (slug) da avaliação",
+    date_started: "Timestamp de início da avaliação",
+    date_completed: "Timestamp de finalização da avaliação",
+    reported_score: "Pontuação obtida na avaliação (0 a 300+)",
+    reported_percentile: "Percentil de desempenho obtido",
+    reported_knowledge_level: "Nível de conhecimento alcançado (ex: Beginner, Intermediate, Advanced)",
+    attempt_number: "Número da tentativa realizada pelo usuário",
+    loaded_at: "Timestamp de carga do registro na camada staging"
+  },
+  assertions: {
+    nonNull: ["user_id", "assessment_slug", "attempt_number"],
+    uniqueKey: ["user_id", "assessment_slug", "attempt_number"]
+  }
 }
 
 SELECT
-  -- Padronização de Strings
-  LOWER(TRIM(SAFE_CAST(email AS STRING))) AS useremail,
-  TRIM(SAFE_CAST(username AS STRING)) AS username,
+  TRIM(SAFE_CAST(user_id AS STRING)) AS user_id,
   TRIM(SAFE_CAST(teams AS STRING)) AS teams,
   TRIM(SAFE_CAST(assessment_name AS STRING)) AS assessment_name,
   TRIM(SAFE_CAST(assessment_slug AS STRING)) AS assessment_slug,
@@ -23,7 +34,8 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_skill_assessments")}
-  -- Remoção de valores nulos críticos
 WHERE
-  email IS NOT NULL
-  AND TRIM(email) <> ""
+  user_id IS NOT NULL
+  AND TRIM(user_id) <> ""
+  AND assessment_slug IS NOT NULL
+  AND attempt_number IS NOT NULL

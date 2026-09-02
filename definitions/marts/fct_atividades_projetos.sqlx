@@ -1,0 +1,33 @@
+config {
+  type: "table",
+  schema: "marts",
+  description: "Tabela Fato de atividades em projetos práticos. Grão: 1 linha por usuário e projeto.",
+  columns: {
+    user_id: "Chave Estrangeira: Identificador único anonimizado do aluno",
+    project_id: "Chave Estrangeira: Identificador numérico do projeto",
+    projectname: "Nome do projeto prático",
+    technology: "Tecnologia aplicada no projeto",
+    startedat: "Timestamp de início do projeto",
+    completedat: "Timestamp de conclusão do projeto",
+    is_completed: "Flag booleana indicando se o projeto foi finalizado com sucesso"
+  },
+  assertions: {
+    uniqueKey: ["user_id", "project_id"],
+    nonNull: ["user_id", "project_id"]
+  }
+}
+
+SELECT
+  user_id,
+  projectid AS project_id,
+  projectname,
+  technology,
+  startedat,
+  completedat,
+  CASE
+    WHEN completedat IS NOT NULL THEN TRUE
+    ELSE FALSE
+  END AS is_completed
+FROM ${ref("stg_project_activity")}
+WHERE user_id IS NOT NULL
+  AND projectid IS NOT NULL

@@ -13,6 +13,7 @@ WITH metric_checks AS (
       SELECT COALESCE(SUM(SAFE_CAST(hours AS FLOAT64)), 0)
       FROM ${ref("raw_content_catalog")}
       WHERE id IS NOT NULL
+        AND TRIM(SAFE_CAST(id AS STRING)) <> ""
     ) AS raw_value,
     (
       SELECT COALESCE(SUM(hours), 0)
@@ -28,8 +29,9 @@ WITH metric_checks AS (
     (
       SELECT COALESCE(SUM(SAFE_CAST(totalcoursexpearned AS INT64)), 0)
       FROM ${ref("raw_course_activity")}
-      WHERE useremail IS NOT NULL
-        AND TRIM(useremail) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
+        AND courseid IS NOT NULL
     ),
     (
       SELECT COALESCE(SUM(totalcoursexpearned), 0)
@@ -45,8 +47,9 @@ WITH metric_checks AS (
     (
       SELECT COALESCE(SUM(SAFE_CAST(hours_spent AS FLOAT64)), 0)
       FROM ${ref("raw_program_activity")}
-      WHERE useremail IS NOT NULL
-        AND TRIM(useremail) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
+        AND trackid IS NOT NULL
     ),
     (
       SELECT COALESCE(SUM(hours_spent), 0)
@@ -62,8 +65,10 @@ WITH metric_checks AS (
     (
       SELECT COALESCE(SUM(SAFE_CAST(reported_score AS INT64)), 0)
       FROM ${ref("raw_skill_assessments")}
-      WHERE email IS NOT NULL
-        AND TRIM(email) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
+        AND assessment_slug IS NOT NULL
+        AND attempt_number IS NOT NULL
     ),
     (
       SELECT COALESCE(SUM(reported_score), 0)
@@ -79,8 +84,8 @@ WITH metric_checks AS (
     (
       SELECT COALESCE(SUM(SAFE_CAST(totalxp AS INT64)), 0)
       FROM ${ref("raw_summary")}
-      WHERE useremail IS NOT NULL
-        AND TRIM(useremail) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
     ),
     (
       SELECT COALESCE(SUM(totalxp), 0)
@@ -96,8 +101,8 @@ WITH metric_checks AS (
     (
       SELECT COALESCE(SUM(SAFE_CAST(alltypes AS FLOAT64)), 0)
       FROM ${ref("raw_time_spent")}
-      WHERE email IS NOT NULL
-        AND TRIM(email) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
     ),
     (
       SELECT COALESCE(SUM(alltypes), 0)
@@ -112,4 +117,4 @@ SELECT
   stg_value,
   raw_value - stg_value AS difference
 FROM metric_checks
-WHERE ABS(raw_value - stg_value) > 0.000001
+WHERE ABS(raw_value - stg_value) > 0.000001

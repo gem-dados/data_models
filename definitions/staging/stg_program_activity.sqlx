@@ -1,17 +1,35 @@
 config {
-    type: "table",
-    description: "Normaliza raw.program_activity. Padroniza strings e remove nulos críticos.",
-    assertions: {
-        nonNull: ["useremail"],
-        uniqueKey: ["useremail", "trackid"]
-    }
+  type: "table",
+  description: "Normaliza raw.program_activity. Progresso dos usuários em trilhas/programas de aprendizagem, 100% livre de PII.",
+  columns: {
+    user_id: "Identificador único anonimizado do usuário (SHA-256)",
+    teams: "Equipes ou turmas associadas ao usuário",
+    trackid: "Identificador numérico da trilha/programa",
+    trackversionid: "Identificador da versão da trilha",
+    tracktitle: "Título da trilha de aprendizagem",
+    technology: "Tecnologia principal da trilha",
+    startedat: "Timestamp de início da trilha",
+    completedat: "Timestamp de conclusão da trilha",
+    pct_xp_earned: "Percentual de XP obtido na trilha",
+    hours_spent: "Horas dedicadas à trilha",
+    numcourses: "Quantidade total de cursos na trilha",
+    numcoursescompleted: "Quantidade de cursos concluídos na trilha",
+    numchapters: "Quantidade total de capítulos na trilha",
+    numchapterscompleted: "Quantidade de capítulos concluídos na trilha",
+    numprojects: "Quantidade de projetos associados à trilha",
+    numprojectscompleted: "Quantidade de projetos concluídos",
+    numassessments: "Quantidade de avaliações na trilha",
+    numassessmentscompleted: "Quantidade de avaliações concluídas",
+    loaded_at: "Timestamp de carga do registro na camada staging"
+  },
+  assertions: {
+    nonNull: ["user_id", "trackid"],
+    uniqueKey: ["user_id", "trackid"]
+  }
 }
 
 SELECT
-  -- Padronização de Strings
-  INITCAP(TRIM(SAFE_CAST(firstname AS STRING))) AS firstname,
-  INITCAP(TRIM(SAFE_CAST(lastname AS STRING))) AS lastname,
-  LOWER(TRIM(SAFE_CAST(useremail AS STRING))) AS useremail,
+  TRIM(SAFE_CAST(user_id AS STRING)) AS user_id,
   TRIM(SAFE_CAST(teams AS STRING)) AS teams,
   SAFE_CAST(trackid AS INT64) AS trackid,
   SAFE_CAST(trackversionid AS INT64) AS trackversionid,
@@ -19,7 +37,7 @@ SELECT
   TRIM(SAFE_CAST(technology AS STRING)) AS technology,
   SAFE_CAST(startedat AS TIMESTAMP) AS startedat,
   SAFE_CAST(completedat AS TIMESTAMP) AS completedat,
-  SAFE_CAST(REPLACE(pct_xp_earned, '%', '') AS INT64) AS pct_xp_earned,
+  SAFE_CAST(REPLACE(CAST(pct_xp_earned AS STRING), '%', '') AS INT64) AS pct_xp_earned,
   SAFE_CAST(hours_spent AS FLOAT64) AS hours_spent,
   SAFE_CAST(numcourses AS INT64) AS numcourses,
   SAFE_CAST(numcoursescompleted AS INT64) AS numcoursescompleted,
@@ -32,7 +50,7 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_program_activity")}
-  -- Remoção de valores nulos críticos
 WHERE
-  useremail IS NOT NULL
-  AND TRIM(useremail) <> ""
+  user_id IS NOT NULL
+  AND TRIM(user_id) <> ""
+  AND trackid IS NOT NULL

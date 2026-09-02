@@ -1,0 +1,25 @@
+config {
+  type: "table",
+  schema: "marts",
+  description: "Tabela Fato de movimentação de usuários e eventos de turmas/equipes.",
+  columns: {
+    eventtime: "Timestamp do evento ocorrido",
+    eventtype: "Tipo do evento (ex: UserJoinedTeam, UserLeftTeam)",
+    eventtargettype: "Alvo do evento",
+    teamdata: "Identificador ou dados da equipe",
+    userdata: "Identificador ou dados do usuário"
+  },
+  assertions: {
+    nonNull: ["userdata", "eventtime", "eventtype"]
+  }
+}
+
+SELECT
+  eventtime,
+  eventtype,
+  eventtargettype,
+  teamdata,
+  userdata
+FROM ${ref("stg_team_history")}
+WHERE userdata IS NOT NULL
+  AND eventtime IS NOT NULL
