@@ -1,17 +1,24 @@
 config {
-    type: "table",
-    description: "Normaliza raw.project_activity. Padroniza strings e remove nulos críticos.",
-    assertions: {
-        nonNull: ["useremail"],
-        uniqueKey: ["useremail", "projectid"]
-    }
+  type: "table",
+  description: "Normaliza raw.project_activity. Atividade dos usuários em projetos práticos, 100% livre de PII.",
+  columns: {
+    user_id: "Identificador único anonimizado do usuário (SHA-256)",
+    teams: "Equipes ou turmas associadas ao usuário",
+    projectid: "Identificador numérico do projeto",
+    projectname: "Nome do projeto prático",
+    technology: "Tecnologia principal utilizada no projeto (ex: Python, R)",
+    startedat: "Timestamp de início do projeto",
+    completedat: "Timestamp de conclusão do projeto",
+    loaded_at: "Timestamp de carga do registro na camada staging"
+  },
+  assertions: {
+    nonNull: ["user_id", "projectid"],
+    uniqueKey: ["user_id", "projectid"]
+  }
 }
 
 SELECT
-  -- Padronização de Strings
-  INITCAP(TRIM(SAFE_CAST(firstname AS STRING))) AS firstname,
-  INITCAP(TRIM(SAFE_CAST(lastname AS STRING))) AS lastname,
-  LOWER(TRIM(SAFE_CAST(useremail AS STRING))) AS useremail,
+  TRIM(SAFE_CAST(user_id AS STRING)) AS user_id,
   TRIM(SAFE_CAST(teams AS STRING)) AS teams,
   SAFE_CAST(projectid AS INT64) AS projectid,
   TRIM(SAFE_CAST(projectname AS STRING)) AS projectname,
@@ -21,7 +28,7 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_project_activity")}
-  -- Remoção de valores nulos críticos
 WHERE
-  useremail IS NOT NULL
-  AND TRIM(useremail) <> ""
+  user_id IS NOT NULL
+  AND TRIM(user_id) <> ""
+  AND projectid IS NOT NULL

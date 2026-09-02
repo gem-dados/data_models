@@ -1,21 +1,38 @@
 config {
-    type: "table",
-    description: "Normaliza raw.summary. Padroniza strings e remove nulos críticos.",
-    assertions: {
-        nonNull: ["useremail"],
-        uniqueKey: ["useremail"]
-    }
+  type: "table",
+  description: "Normaliza raw.summary. Resumo consolidado de atividades, XP e conclusões por usuário, 100% livre de PII.",
+  columns: {
+    user_id: "Identificador único anonimizado do usuário (SHA-256)",
+    teams: "Equipes ou turmas associadas ao usuário",
+    dateuserjoinedgroup: "Data de entrada do usuário no grupo",
+    dateuserleftgroup: "Data de saída do usuário do grupo",
+    totalxp: "Total acumulado de pontos de experiência (XP)",
+    dateoflastxpearned: "Timestamp do último XP obtido",
+    numexercisescompleted: "Quantidade total de exercícios completados",
+    numchapterscompleted: "Quantidade total de capítulos completados",
+    numcoursescompleted: "Quantidade total de cursos completados",
+    numtrackscompleted: "Quantidade total de trilhas completadas",
+    numpractisescompleted: "Quantidade total de práticas completadas",
+    numprojectscompleted: "Quantidade total de projetos completados",
+    numassessmentscompleted: "Quantidade total de avaliações completadas",
+    completedcourses: "Lista de cursos completados",
+    completedtracks: "Lista de trilhas completadas",
+    completedpractises: "Lista de práticas completadas",
+    completedprojects: "Lista de projetos completados",
+    completedassessments: "Lista de avaliações completadas",
+    loaded_at: "Timestamp de carga do registro na camada staging"
+  },
+  assertions: {
+    nonNull: ["user_id"],
+    uniqueKey: ["user_id"]
+  }
 }
 
 SELECT
-  -- Padronização de Strings
-  INITCAP(TRIM(SAFE_CAST(firstname AS STRING))) AS firstname,
-  INITCAP(TRIM(SAFE_CAST(lastname AS STRING))) AS lastname,
-  LOWER(TRIM(SAFE_CAST(useremail AS STRING))) AS useremail,
-  TRIM(SAFE_CAST(username AS STRING)) AS username,
+  TRIM(SAFE_CAST(user_id AS STRING)) AS user_id,
   TRIM(SAFE_CAST(teams AS STRING)) AS teams,
-  SAFE_CAST(dateuserjoinedgroup AS TIMESTAMP) AS dateuserjoinedgroup,
-  SAFE_CAST(dateuserleftgroup AS TIMESTAMP) AS dateuserleftgroup,
+  SAFE_CAST(REGEXP_REPLACE(dateuserjoinedgroup, r'\.\d+Z$', 'Z') AS TIMESTAMP) AS dateuserjoinedgroup,
+  SAFE_CAST(REGEXP_REPLACE(dateuserleftgroup, r'\.\d+Z$', 'Z') AS TIMESTAMP) AS dateuserleftgroup,
   SAFE_CAST(totalxp AS INT64) AS totalxp,
   SAFE_CAST(dateoflastxpearned AS TIMESTAMP) AS dateoflastxpearned,
   SAFE_CAST(numexercisescompleted AS INT64) AS numexercisescompleted,
@@ -33,7 +50,6 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_summary")}
-  -- Remoção de valores nulos críticos
 WHERE
-  useremail IS NOT NULL
-  AND TRIM(useremail) <> ""
+  user_id IS NOT NULL
+  AND TRIM(user_id) <> ""

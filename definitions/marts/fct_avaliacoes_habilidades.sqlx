@@ -1,0 +1,40 @@
+config {
+  type: "table",
+  schema: "marts",
+  description: "Tabela Fato de avaliações técnicas de competência por tentativa. Grão: 1 linha por usuário, avaliação e tentativa.",
+  columns: {
+    user_id: "Chave Estrangeira: Identificador único anonimizado do aluno",
+    assessment_name: "Nome descritivo da avaliação de competência",
+    assessment_slug: "Identificador único (slug) da avaliação",
+    date_started: "Timestamp de início da tentativa",
+    date_completed: "Timestamp de finalização da tentativa",
+    reported_score: "Pontuação atingida (0 a 300+)",
+    reported_percentile: "Percentil em relação a todos os usuários da plataforma",
+    reported_knowledge_level: "Nível de conhecimento alcançado (Beginner, Intermediate, Advanced)",
+    attempt_number: "Número ordinal da tentativa",
+    is_proficient: "Flag booleana indicando se o aluno atingiu nível Intermediate ou Advanced"
+  },
+  assertions: {
+    uniqueKey: ["user_id", "assessment_slug", "attempt_number"],
+    nonNull: ["user_id", "assessment_slug", "attempt_number"]
+  }
+}
+
+SELECT
+  user_id,
+  assessment_name,
+  assessment_slug,
+  date_started,
+  date_completed,
+  reported_score,
+  reported_percentile,
+  reported_knowledge_level,
+  attempt_number,
+  CASE
+    WHEN LOWER(reported_knowledge_level) IN ("intermediate", "advanced", "proficient") THEN TRUE
+    ELSE FALSE
+  END AS is_proficient
+FROM ${ref("stg_skill_assessments")}
+WHERE user_id IS NOT NULL
+  AND assessment_slug IS NOT NULL
+  AND attempt_number IS NOT NULL

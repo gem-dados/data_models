@@ -1,0 +1,41 @@
+config {
+  type: "table",
+  schema: "marts",
+  description: "Tabela Fato consolidada de atividades, XP e entregas finais por aluno. Grão: 1 linha por usuário.",
+  columns: {
+    user_id: "Chave Estrangeira: Identificador único anonimizado do aluno",
+    totalxp: "Total acumulado de XP do usuário",
+    dateoflastxpearned: "Timestamp do último XP conquistado",
+    numexercisescompleted: "Quantidade de exercícios completados",
+    numchapterscompleted: "Quantidade de capítulos completados",
+    numcoursescompleted: "Quantidade de cursos completados",
+    numtrackscompleted: "Quantidade de trilhas completadas",
+    numpractisescompleted: "Quantidade de práticas completadas",
+    numprojectscompleted: "Quantidade de projetos completados",
+    numassessmentscompleted: "Quantidade de avaliações completadas",
+    completedcourses: "Array/string de cursos completados",
+    completedtracks: "Array/string de trilhas completadas",
+    completedprojects: "Array/string de projetos completados"
+  },
+  assertions: {
+    uniqueKey: ["user_id"],
+    nonNull: ["user_id"]
+  }
+}
+
+SELECT
+  user_id,
+  totalxp,
+  dateoflastxpearned,
+  numexercisescompleted,
+  numchapterscompleted,
+  numcoursescompleted,
+  numtrackscompleted,
+  numpractisescompleted,
+  numprojectscompleted,
+  numassessmentscompleted,
+  completedcourses,
+  completedtracks,
+  completedprojects
+FROM ${ref("stg_summary")}
+WHERE user_id IS NOT NULL

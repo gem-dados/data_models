@@ -1,21 +1,38 @@
 config {
-    type: "table",
-    description: "Normaliza raw.course_activity. Padroniza strings e remove nulos críticos.",
-    assertions: {
-        nonNull: ["useremail"],
-        uniqueKey: ["useremail", "courseid"]
-    }
+  type: "table",
+  description: "Normaliza raw.course_activity. Dados de progresso e atividade dos usuários nos cursos, 100% livre de PII.",
+  columns: {
+    user_id: "Identificador único anonimizado do usuário (SHA-256)",
+    teams: "Equipes ou turmas às quais o usuário pertence",
+    joinedgroup: "Data e hora de entrada do usuário no grupo",
+    leftgroup: "Data e hora de saída do usuário do grupo",
+    courseid: "Identificador numérico do curso",
+    coursename: "Nome completo do curso",
+    technology: "Tecnologia principal do curso (ex: Python, SQL)",
+    startedcourse: "Timestamp do início do curso pelo usuário",
+    finishedcourse: "Timestamp de conclusão do curso",
+    skippedcourse: "Indicação se o curso foi pulado/dispensado",
+    lastvisitedcourse: "Timestamp da última interação com o curso",
+    completedcourseexercises: "Quantidade de exercícios completados no curso",
+    coursecompletionrate: "Taxa percentual de conclusão do curso (0 a 1)",
+    coursestatus: "Status de progresso no curso (ex: completed, in_progress, not_started)",
+    totalcoursexpearned: "Pontos de experiência (XP) obtidos no curso",
+    totalcoursexpavailable: "Total de XP disponível no curso",
+    xpscore: "Score de aproveitamento de XP",
+    coursestate: "Estado do curso",
+    loaded_at: "Timestamp de carga do registro na camada staging"
+  },
+  assertions: {
+    nonNull: ["user_id", "courseid", "coursename"],
+    uniqueKey: ["user_id", "courseid", "coursename"]
+  }
 }
 
 SELECT
-  -- Padronização de Strings
-  INITCAP(TRIM(SAFE_CAST(firstname AS STRING))) AS firstname,
-  INITCAP(TRIM(SAFE_CAST(lastname AS STRING))) AS lastname,
-  LOWER(TRIM(SAFE_CAST(useremail AS STRING))) AS useremail,
-  TRIM(SAFE_CAST(username AS STRING)) AS username,
+  TRIM(SAFE_CAST(user_id AS STRING)) AS user_id,
   TRIM(SAFE_CAST(teams AS STRING)) AS teams,
-  SAFE_CAST(joinedgroup AS TIMESTAMP) AS joinedgroup,
-  SAFE_CAST(leftgroup AS TIMESTAMP) AS leftgroup,
+  SAFE_CAST(REGEXP_REPLACE(joinedgroup, r'\.\d+Z$', 'Z') AS TIMESTAMP) AS joinedgroup,
+  SAFE_CAST(REGEXP_REPLACE(leftgroup, r'\.\d+Z$', 'Z') AS TIMESTAMP) AS leftgroup,
   SAFE_CAST(courseid AS INT64) AS courseid,
   TRIM(SAFE_CAST(coursename AS STRING)) AS coursename,
   TRIM(SAFE_CAST(technology AS STRING)) AS technology,
@@ -33,7 +50,7 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_course_activity")}
-  -- Remoção de valores nulos críticos
 WHERE
-  useremail IS NOT NULL
-  AND TRIM(useremail) <> ""
+  user_id IS NOT NULL
+  AND TRIM(user_id) <> ""
+  AND courseid IS NOT NULL

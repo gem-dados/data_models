@@ -1,15 +1,22 @@
 config {
-    type: "table",
-    description: "Normaliza raw.team_history. Padroniza strings e remove nulos críticos.",
-    assertions: {
-        nonNull: ["userdata"],
-        uniqueKey: ["userdata", "eventtime", "eventtype"]
-    }
+  type: "table",
+  description: "Normaliza raw.team_history. Histórico de eventos e alterações nas equipes da organização.",
+  columns: {
+    eventtime: "Timestamp do evento ocorrido na equipe",
+    eventtype: "Tipo do evento (ex: added, removed, role_changed)",
+    eventtargettype: "Tipo de alvo do evento (ex: user, team)",
+    teamdata: "Identificador ou dados da equipe relacionada",
+    userdata: "Identificador ou dados do usuário envolvido no evento",
+    loaded_at: "Timestamp de carga do registro na camada staging"
+  },
+  assertions: {
+    nonNull: ["userdata", "eventtime", "eventtype"],
+    uniqueKey: ["userdata", "eventtime", "eventtype"]
+  }
 }
 
 SELECT
-  -- Padronização de Strings
-  SAFE_CAST(eventtime AS TIMESTAMP) AS eventtime,
+  SAFE_CAST(REGEXP_REPLACE(eventtime, r'\.\d+Z$', 'Z') AS TIMESTAMP) AS eventtime,
   TRIM(SAFE_CAST(eventtype AS STRING)) AS eventtype,
   TRIM(SAFE_CAST(eventtargettype AS STRING)) AS eventtargettype,
   TRIM(SAFE_CAST(teamdata AS STRING)) AS teamdata,
@@ -17,7 +24,7 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_team_history")}
-  -- Remoção de valores nulos críticos
 WHERE
   userdata IS NOT NULL
   AND TRIM(userdata) <> ""
+  AND eventtime IS NOT NULL

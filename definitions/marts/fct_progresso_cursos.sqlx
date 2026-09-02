@@ -1,0 +1,58 @@
+config {
+  type: "table",
+  schema: "marts",
+  description: "Tabela Fato de progresso e conclusão dos usuários em cursos. Grão: 1 linha por usuário e curso.",
+  columns: {
+    user_id: "Chave Estrangeira: Identificador único anonimizado do aluno",
+    course_id: "Chave Estrangeira: Identificador numérico do curso",
+    coursename: "Nome completo do curso",
+    technology: "Tecnologia principal do curso",
+    startedcourse: "Timestamp de início do curso",
+    finishedcourse: "Timestamp de conclusão do curso",
+    duration_minutes: "Duração calculada em minutos entre início e conclusão",
+    skippedcourse: "Flag se o curso foi pulado",
+    lastvisitedcourse: "Timestamp da última visita ao curso",
+    completedcourseexercises: "Total de exercícios completados no curso",
+    coursecompletionrate: "Taxa de conclusão do curso (0 a 1)",
+    coursestatus: "Status do curso (completed, in_progress, not_started)",
+    is_completed: "Flag booleana indicando se o curso foi finalizado com sucesso",
+    totalcoursexpearned: "Pontos de XP obtidos no curso",
+    totalcoursexpavailable: "Total de XP disponível no curso",
+    xpscore: "Score de aproveitamento",
+    coursestate: "Estado operacional do curso"
+  },
+  assertions: {
+    uniqueKey: ["user_id", "course_id", "coursename"],
+    nonNull: ["user_id", "course_id"]
+  }
+}
+
+SELECT
+  user_id,
+  courseid AS course_id,
+  coursename,
+  technology,
+  startedcourse,
+  finishedcourse,
+  CASE
+    WHEN finishedcourse IS NOT NULL AND startedcourse IS NOT NULL
+    THEN TIMESTAMP_DIFF(finishedcourse, startedcourse, MINUTE)
+    ELSE NULL
+  END AS duration_minutes,
+  skippedcourse,
+  lastvisitedcourse,
+  completedcourseexercises,
+  coursecompletionrate,
+  coursestatus,
+  CASE
+    WHEN finishedcourse IS NOT NULL OR LOWER(coursestatus) = "completed" OR coursecompletionrate >= 1.0
+    THEN TRUE
+    ELSE FALSE
+  END AS is_completed,
+  totalcoursexpearned,
+  totalcoursexpavailable,
+  xpscore,
+  coursestate
+FROM ${ref("stg_course_activity")}
+WHERE user_id IS NOT NULL
+  AND courseid IS NOT NULL
