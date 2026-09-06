@@ -4,7 +4,7 @@
 
 WITH cursos_por_tech AS (
   SELECT
-    COALESCE(technology, "Outros") AS tecnologia,
+    COALESCE(technology, 'Outros') AS tecnologia,
     COUNT(DISTINCT user_id) AS alunos_engajados,
     COUNT(*) AS total_matriculas_cursos,
     COUNTIF(is_completed = TRUE) AS total_cursos_completados,
@@ -17,11 +17,11 @@ WITH cursos_por_tech AS (
 certificacoes_por_tech AS (
   SELECT
     CASE
-      WHEN LOWER(certificationname) LIKE "%python%" THEN "Python"
-      WHEN LOWER(certificationname) LIKE "%sql%" THEN "SQL"
-      WHEN REGEXP_CONTAINS(LOWER(certificationname), r'\br\b') THEN "R"
-      WHEN LOWER(certificationname) LIKE "%data%" THEN "Data Science / Analytics"
-      ELSE "Geral / Outros"
+      WHEN LOWER(certificationname) LIKE '%python%' THEN 'Python'
+      WHEN LOWER(certificationname) LIKE '%sql%' THEN 'SQL'
+      WHEN REGEXP_CONTAINS(LOWER(certificationname), r'\br\b') THEN 'R'
+      WHEN LOWER(certificationname) LIKE '%data%' THEN 'Data Science / Analytics'
+      ELSE 'Geral / Outros'
     END AS tecnologia,
     COUNTIF(is_certified = TRUE) AS certificacoes_emitidas
   FROM `gem-dados-lake-prd.marts.fct_certificacoes`

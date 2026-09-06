@@ -9,7 +9,7 @@ WITH metricas_curso AS (
   SELECT
     course_id,
     coursename,
-    COALESCE(technology, "Outros") AS tecnologia,
+    COALESCE(technology, 'Outros') AS tecnologia,
     COUNT(DISTINCT user_id) AS total_alunos,
     COUNTIF(is_completed = TRUE) AS total_conclusoes,
     ROUND(
@@ -46,12 +46,12 @@ SELECT
   -- Flag de alerta: duração acima da média geral e conclusão abaixo da média
   CASE
     WHEN m.media_duracao_minutos > g.media_global_duracao AND m.taxa_conclusao_pct < g.media_global_conclusao
-      THEN "Alto Tempo e Baixa Conclusão (Gargalo Crítico)"
+      THEN 'Alto Tempo e Baixa Conclusão (Gargalo Crítico)'
     WHEN m.taxa_conclusao_pct < g.media_global_conclusao
-      THEN "Baixa Conclusão"
+      THEN 'Baixa Conclusão'
     WHEN m.media_duracao_minutos > g.media_global_duracao
-      THEN "Curso Extenso"
-    ELSE "Desempenho Saudável"
+      THEN 'Curso Extenso'
+    ELSE 'Desempenho Saudável'
   END AS classificacao_gargalo
 FROM metricas_curso m
 CROSS JOIN medias_gerais g

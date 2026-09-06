@@ -42,12 +42,12 @@ SELECT
   ROUND(AVG(u.score_final - p.score_inicial), 1) AS evolucao_media_pontos,
   ROUND(AVG(u.total_tentativas), 1) AS media_tentativas_por_aluno,
 
-  COUNTIF(LOWER(p.nivel_inicial) = "beginner") AS iniciantes_primeira_tentativa,
-  COUNTIF(LOWER(u.nivel_final) IN ("intermediate", "advanced", "proficient")) AS proficientes_ultima_tentativa,
+  COUNTIF(LOWER(p.nivel_inicial) = 'beginner') AS iniciantes_primeira_tentativa,
+  COUNTIF(LOWER(u.nivel_final) IN ('intermediate', 'advanced', 'proficient')) AS proficientes_ultima_tentativa,
 
   ROUND(
     SAFE_DIVIDE(
-      COUNTIF(LOWER(u.nivel_final) IN ("intermediate", "advanced", "proficient")) * 100.0,
+      COUNTIF(LOWER(u.nivel_final) IN ('intermediate', 'advanced', 'proficient')) * 100.0,
       COUNT(DISTINCT p.user_id)
     ), 2
   ) AS taxa_proficiencia_final_pct

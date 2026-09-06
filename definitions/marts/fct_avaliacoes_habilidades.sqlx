@@ -31,7 +31,7 @@ SELECT
   reported_knowledge_level,
   attempt_number,
   CASE
-    WHEN LOWER(reported_knowledge_level) IN ("intermediate", "advanced", "proficient") THEN TRUE
+    WHEN LOWER(reported_knowledge_level) IN ('intermediate', 'advanced', 'proficient') THEN TRUE
     ELSE FALSE
   END AS is_proficient
 FROM ${ref("stg_skill_assessments")}

@@ -45,7 +45,7 @@ SELECT
   coursecompletionrate,
   coursestatus,
   CASE
-    WHEN finishedcourse IS NOT NULL OR LOWER(coursestatus) = "completed" OR coursecompletionrate >= 1.0
+    WHEN finishedcourse IS NOT NULL OR LOWER(coursestatus) = 'completed' OR coursecompletionrate >= 1.0
     THEN TRUE
     ELSE FALSE
   END AS is_completed,

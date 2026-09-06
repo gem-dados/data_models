@@ -1,6 +1,6 @@
-# Queries Analíticas — Respostas às 5 Perguntas de Negócio (Sprint 0)
+# Queries Analíticas — Respostas às Perguntas de Negócio da Governança (Sprint 0)
 
-Este documento apresenta a especificação, lógica de negócio e queries SQL em formato Google BigQuery desenvolvidas para responder às 5 perguntas de negócio prioritárias definidas na Sprint 0 do projeto `gem-dados`.
+Este documento apresenta a especificação, lógica de negócio e queries SQL em formato Google BigQuery desenvolvidas para responder às perguntas de negócio prioritárias definidas na Sprint 0 do projeto `gem-dados` (incluindo questão bônus).
 
 Todas as queries consomem exclusivamente a camada dimensional higienizada (`marts`), garantindo total conformidade com a LGPD através do uso de `user_id` anonimizado (SHA-256).
 
@@ -13,6 +13,7 @@ Todas as queries consomem exclusivamente a camada dimensional higienizada (`mart
 3. [Pergunta 3: Eficiência & Gargalos de Conclusão de Cursos e Trilhas](#pergunta-3-eficiência--gargalos-de-conclusão-de-cursos-e-trilhas)
 4. [Pergunta 4: Evolução de Proficiência & Habilidades (Skill Assessments)](#pergunta-4-evolução-de-proficiência--habilidades-skill-assessments)
 5. [Pergunta 5: Adoção & Demanda de Tecnologias](#pergunta-5-adoção--demanda-de-tecnologias)
+6. [Pergunta 6 (Bônus): Cursos com Alto Tempo e Baixa Conclusão (Gargalos)](#pergunta-6-bônus-cursos-com-alto-tempo-e-baixa-conclusão-gargalos)
 
 ---
 
@@ -285,4 +286,72 @@ FROM cursos_por_tech c
 LEFT JOIN certificacoes_por_tech cert
   ON c.tecnologia = cert.tecnologia
 ORDER BY c.total_matriculas_cursos DESC;
+```
+
+---
+
+## Pergunta 6 (Bônus): Cursos com Alto Tempo e Baixa Conclusão (Gargalos)
+
+> **Objetivo:** *Existe algum curso com alto tempo de aprendizado, mas com baixa conclusão?*
+
+### Lógica de Negócio
+- Consolidar as métricas de duração média (`AVG(duration_minutes)`), total de alunos e taxa de conclusão por curso.
+- Calcular médias globais de duração e taxa de conclusão entre cursos com pelo menos 2 alunos.
+- Classificar cursos com duração acima da média geral e taxa de conclusão abaixo da média como "Gargalos Críticos".
+
+### Query SQL (BigQuery)
+
+```sql
+-- Pergunta 6: Identificação de Cursos Gargalos (Alto Tempo e Baixa Conclusão)
+WITH metricas_curso AS (
+  SELECT
+    course_id,
+    coursename,
+    COALESCE(technology, 'Outros') AS tecnologia,
+    COUNT(DISTINCT user_id) AS total_alunos,
+    COUNTIF(is_completed = TRUE) AS total_conclusoes,
+    ROUND(
+      SAFE_DIVIDE(COUNTIF(is_completed = TRUE) * 100.0, COUNT(*)),
+      2
+    ) AS taxa_conclusao_pct,
+    ROUND(AVG(duration_minutes), 1) AS media_duracao_minutos,
+    ROUND(AVG(duration_minutes) / 60.0, 1) AS media_horas_estudo,
+    ROUND(AVG(totalcoursexpearned), 1) AS media_xp_obtido,
+    ROUND(AVG(coursecompletionrate) * 100.0, 2) AS media_progresso_medio_pct
+  FROM `gem-dados-lake-prd.marts.fct_progresso_cursos`
+  WHERE startedcourse IS NOT NULL
+  GROUP BY course_id, coursename, tecnologia
+),
+
+medias_gerais AS (
+  SELECT
+    AVG(media_duracao_minutos) AS media_global_duracao,
+    AVG(taxa_conclusao_pct) AS media_global_conclusao
+  FROM metricas_curso
+  WHERE total_alunos >= 2
+)
+
+SELECT
+  m.course_id,
+  m.coursename,
+  m.tecnologia,
+  m.total_alunos,
+  m.total_conclusoes,
+  m.taxa_conclusao_pct,
+  m.media_horas_estudo,
+  m.media_progresso_medio_pct,
+  m.media_xp_obtido,
+  CASE
+    WHEN m.media_duracao_minutos > g.media_global_duracao AND m.taxa_conclusao_pct < g.media_global_conclusao
+      THEN 'Alto Tempo e Baixa Conclusão (Gargalo Crítico)'
+    WHEN m.taxa_conclusao_pct < g.media_global_conclusao
+      THEN 'Baixa Conclusão'
+    WHEN m.media_duracao_minutos > g.media_global_duracao
+      THEN 'Curso Extenso'
+    ELSE 'Desempenho Saudável'
+  END AS classificacao_gargalo
+FROM metricas_curso m
+CROSS JOIN medias_gerais g
+WHERE m.total_alunos >= 2
+ORDER BY m.media_duracao_minutos DESC, m.taxa_conclusao_pct ASC;
 ```

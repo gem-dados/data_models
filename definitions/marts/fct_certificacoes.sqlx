@@ -23,7 +23,7 @@ SELECT
   endedat,
   status,
   CASE
-    WHEN LOWER(status) IN ("passed", "certified", "completed", "approved") THEN TRUE
+    WHEN LOWER(status) IN ('passed', 'certified', 'completed', 'approved') THEN TRUE
     ELSE FALSE
   END AS is_certified
 FROM ${ref("stg_certifications")}

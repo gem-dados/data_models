@@ -48,8 +48,8 @@ SELECT
   p.dateuserjoinedgroup,
   p.dateuserleftgroup,
   CASE
-    WHEN p.dateuserleftgroup IS NULL THEN "active"
-    ELSE "inactive"
+    WHEN p.dateuserleftgroup IS NULL THEN 'active'
+    ELSE 'inactive'
   END AS user_status
 FROM usuarios u
 LEFT JOIN periodo_usuario p

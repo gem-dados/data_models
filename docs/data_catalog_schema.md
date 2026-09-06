@@ -143,7 +143,7 @@ flowchart TD
 | `startedat` | TIMESTAMP | | Timestamp de início na trilha |
 | `completedat` | TIMESTAMP | | Timestamp de conclusão da trilha |
 | `duration_days` | INT64 | | Duração calculada em dias |
-| `pct_xp_earned` | INT64 | | Percentual de XP conquistado |
+| `pct_xp_earned` | FLOAT64 | | Percentual de XP conquistado |
 | `hours_spent` | FLOAT64 | | Horas investidas na trilha |
 | `numcourses` | INT64 | | Total de cursos da trilha |
 | `numcoursescompleted` | INT64 | | Cursos concluídos na trilha |
