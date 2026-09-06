@@ -1,0 +1,31 @@
+config {
+  type: "table",
+  schema: "marts",
+  description: "Tabela Fato de tempo de estudo acumulado por categoria de conteúdo. Grão: 1 linha por usuário.",
+  columns: {
+    user_id: "Chave Estrangeira: Identificador único anonimizado do aluno",
+    hours_alltypes: "Total de horas de estudo acumuladas",
+    hours_courses_classic: "Horas dedicadas a cursos clássicos",
+    hours_courses_ai_native: "Horas dedicadas a cursos nativos de IA",
+    hours_courses_total: "Horas totais dedicadas a cursos",
+    hours_assessments: "Horas dedicadas a avaliações",
+    hours_projects: "Horas dedicadas a projetos práticos",
+    hours_practices: "Horas dedicadas a práticas"
+  },
+  assertions: {
+    uniqueKey: ["user_id"],
+    nonNull: ["user_id"]
+  }
+}
+
+SELECT
+  user_id,
+  alltypes AS hours_alltypes,
+  courses_classic AS hours_courses_classic,
+  courses_ai_native AS hours_courses_ai_native,
+  courses AS hours_courses_total,
+  assessments AS hours_assessments,
+  projects AS hours_projects,
+  practices AS hours_practices
+FROM ${ref("stg_time_spent")}
+WHERE user_id IS NOT NULL

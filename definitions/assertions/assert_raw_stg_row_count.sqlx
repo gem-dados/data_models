@@ -10,8 +10,8 @@ WITH row_counts AS (
     (
       SELECT COUNT(*)
       FROM ${ref("raw_certifications")}
-      WHERE useremail IS NOT NULL
-        AND TRIM(useremail) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
     ) AS raw_expected_count,
     (
       SELECT COUNT(*)
@@ -26,6 +26,7 @@ WITH row_counts AS (
       SELECT COUNT(*)
       FROM ${ref("raw_content_catalog")}
       WHERE id IS NOT NULL
+        AND TRIM(SAFE_CAST(id AS STRING)) <> ""
     ),
     (
       SELECT COUNT(*)
@@ -39,8 +40,9 @@ WITH row_counts AS (
     (
       SELECT COUNT(*)
       FROM ${ref("raw_course_activity")}
-      WHERE useremail IS NOT NULL
-        AND TRIM(useremail) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
+        AND courseid IS NOT NULL
     ),
     (
       SELECT COUNT(*)
@@ -54,8 +56,8 @@ WITH row_counts AS (
     (
       SELECT COUNT(*)
       FROM ${ref("raw_members")}
-      WHERE email IS NOT NULL
-        AND TRIM(email) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
     ),
     (
       SELECT COUNT(*)
@@ -69,8 +71,9 @@ WITH row_counts AS (
     (
       SELECT COUNT(*)
       FROM ${ref("raw_program_activity")}
-      WHERE useremail IS NOT NULL
-        AND TRIM(useremail) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
+        AND trackid IS NOT NULL
     ),
     (
       SELECT COUNT(*)
@@ -84,8 +87,9 @@ WITH row_counts AS (
     (
       SELECT COUNT(*)
       FROM ${ref("raw_project_activity")}
-      WHERE useremail IS NOT NULL
-        AND TRIM(useremail) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
+        AND projectid IS NOT NULL
     ),
     (
       SELECT COUNT(*)
@@ -99,8 +103,10 @@ WITH row_counts AS (
     (
       SELECT COUNT(*)
       FROM ${ref("raw_skill_assessments")}
-      WHERE email IS NOT NULL
-        AND TRIM(email) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
+        AND assessment_slug IS NOT NULL
+        AND attempt_number IS NOT NULL
     ),
     (
       SELECT COUNT(*)
@@ -114,8 +120,8 @@ WITH row_counts AS (
     (
       SELECT COUNT(*)
       FROM ${ref("raw_summary")}
-      WHERE useremail IS NOT NULL
-        AND TRIM(useremail) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
     ),
     (
       SELECT COUNT(*)
@@ -131,6 +137,7 @@ WITH row_counts AS (
       FROM ${ref("raw_team_history")}
       WHERE userdata IS NOT NULL
         AND TRIM(userdata) <> ""
+        AND eventtime IS NOT NULL
     ),
     (
       SELECT COUNT(*)
@@ -144,8 +151,8 @@ WITH row_counts AS (
     (
       SELECT COUNT(*)
       FROM ${ref("raw_time_spent")}
-      WHERE email IS NOT NULL
-        AND TRIM(email) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
     ),
     (
       SELECT COUNT(*)
@@ -158,4 +165,4 @@ SELECT
   raw_expected_count,
   stg_count
 FROM row_counts
-WHERE raw_expected_count <> stg_count
+WHERE raw_expected_count <> stg_count

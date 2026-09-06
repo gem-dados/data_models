@@ -1,17 +1,25 @@
 config {
-    type: "table",
-    description: "Normaliza raw.time_spent. Padroniza strings e remove nulos críticos.",
-    assertions: {
-        nonNull: ["useremail"],
-        uniqueKey: ["useremail"]
-    }
+  type: "table",
+  description: "Normaliza raw.time_spent. Tempo dedicado ao aprendizado distribuído por tipo de atividade (em horas), 100% livre de PII.",
+  columns: {
+    user_id: "Identificador único anonimizado do usuário (SHA-256)",
+    alltypes: "Tempo total em horas dedicado a todos os tipos de conteúdo",
+    courses_classic: "Tempo em horas dedicado a cursos clássicos",
+    courses_ai_native: "Tempo em horas dedicado a cursos nativos de IA",
+    courses: "Tempo total em horas dedicado a cursos",
+    assessments: "Tempo em horas dedicado a avaliações de habilidades",
+    projects: "Tempo em horas dedicado a projetos práticos",
+    practices: "Tempo em horas dedicado a práticas de código",
+    loaded_at: "Timestamp de carga do registro na camada staging"
+  },
+  assertions: {
+    nonNull: ["user_id"],
+    uniqueKey: ["user_id"]
+  }
 }
 
 SELECT
-  -- Padronização de Strings
-  INITCAP(TRIM(SAFE_CAST(firstname AS STRING))) AS firstname,
-  INITCAP(TRIM(SAFE_CAST(lastname AS STRING))) AS lastname,
-  LOWER(TRIM(SAFE_CAST(email AS STRING))) AS useremail,
+  TRIM(SAFE_CAST(user_id AS STRING)) AS user_id,
   SAFE_CAST(alltypes AS FLOAT64) AS alltypes,
   SAFE_CAST(courses_classic AS FLOAT64) AS courses_classic,
   SAFE_CAST(courses_ai_native AS FLOAT64) AS courses_ai_native,
@@ -22,7 +30,6 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_time_spent")}
-  -- Remoção de valores nulos críticos
 WHERE
-  email IS NOT NULL
-  AND TRIM(email) <> ""
+  user_id IS NOT NULL
+  AND TRIM(user_id) <> ""

@@ -1,32 +1,62 @@
 config {
   type: "table",
   schema: "marts",
-  description: "Fato de progresso dos usuários nas trilhas de aprendizagem, contendo informações de progresso, conclusão e horas investidas.",
+  description: "Tabela Fato de progresso e conclusão dos usuários em programas e trilhas de aprendizagem. Grão: 1 linha por usuário e trilha.",
+  columns: {
+    user_id: "Chave Estrangeira: Identificador único anonimizado do aluno",
+    track_id: "Chave Estrangeira: Identificador numérico da trilha/programa",
+    trackversionid: "Versão da trilha",
+    tracktitle: "Título oficial da trilha",
+    technology: "Tecnologia principal da trilha",
+    startedat: "Timestamp de início na trilha",
+    completedat: "Timestamp de conclusão da trilha",
+    duration_days: "Duração calculada em dias entre início e conclusão",
+    pct_xp_earned: "Percentual de XP ganho na trilha",
+    hours_spent: "Horas dedicadas pelo aluno na trilha",
+    numcourses: "Quantidade total de cursos na trilha",
+    numcoursescompleted: "Quantidade de cursos concluídos na trilha",
+    is_completed: "Flag booleana indicando se a trilha foi concluída",
+    numchapters: "Total de capítulos na trilha",
+    numchapterscompleted: "Capítulos concluídos na trilha",
+    numprojects: "Total de projetos na trilha",
+    numprojectscompleted: "Projetos concluídos na trilha",
+    numassessments: "Total de avaliações na trilha",
+    numassessmentscompleted: "Avaliações concluídas na trilha"
+  },
   assertions: {
-    nonNull: ["useremail", "trackid"]
+    uniqueKey: ["user_id", "track_id"],
+    nonNull: ["user_id", "track_id"]
   }
 }
 
 SELECT
-  useremail,
-  trackid,
+  user_id,
+  trackid AS track_id,
   trackversionid,
   tracktitle,
   technology,
   startedat,
   completedat,
+  CASE
+    WHEN completedat IS NOT NULL AND startedat IS NOT NULL
+    THEN DATE_DIFF(DATE(completedat), DATE(startedat), DAY)
+    ELSE NULL
+  END AS duration_days,
   pct_xp_earned,
   hours_spent,
   numcourses,
   numcoursescompleted,
+  CASE
+    WHEN completedat IS NOT NULL OR (numcourses > 0 AND numcoursescompleted >= numcourses)
+    THEN TRUE
+    ELSE FALSE
+  END AS is_completed,
   numchapters,
   numchapterscompleted,
   numprojects,
   numprojectscompleted,
   numassessments,
   numassessmentscompleted
-
 FROM ${ref("stg_program_activity")}
-
-WHERE useremail IS NOT NULL
+WHERE user_id IS NOT NULL
   AND trackid IS NOT NULL

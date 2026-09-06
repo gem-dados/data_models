@@ -1,16 +1,22 @@
 config {
-    type: "table",
-    description: "Normaliza raw.members. Padroniza strings e remove nulos críticos.",
-    assertions: {
-        nonNull: ["useremail"],
-        uniqueKey: ["useremail"]
-    }
+  type: "table",
+  description: "Normaliza raw.members. Cadastro de membros e licenças da organização, 100% livre de PII.",
+  columns: {
+    user_id: "Identificador único anonimizado do membro (SHA-256)",
+    teams: "Equipes ou turmas associadas ao membro",
+    role: "Papel/função do membro na plataforma (ex: student, admin)",
+    learn_license: "Tipo de licença de aprendizado atribuída",
+    workspace_license: "Tipo de licença de workspace atribuída",
+    loaded_at: "Timestamp de carga do registro na camada staging"
+  },
+  assertions: {
+    nonNull: ["user_id"],
+    uniqueKey: ["user_id"]
+  }
 }
 
 SELECT
-  -- Padronização de Strings
-  LOWER(TRIM(SAFE_CAST(email AS STRING))) AS useremail,
-  INITCAP(TRIM(SAFE_CAST(name AS STRING))) AS name,
+  TRIM(SAFE_CAST(user_id AS STRING)) AS user_id,
   TRIM(SAFE_CAST(teams AS STRING)) AS teams,
   TRIM(SAFE_CAST(role AS STRING)) AS role,
   TRIM(SAFE_CAST(learn_license AS STRING)) AS learn_license,
@@ -18,7 +24,6 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_members")}
-  -- Remoção de valores nulos críticos
 WHERE
-  email IS NOT NULL
-  AND TRIM(email) <> ""
+  user_id IS NOT NULL
+  AND TRIM(user_id) <> ""

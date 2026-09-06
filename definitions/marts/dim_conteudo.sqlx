@@ -1,0 +1,41 @@
+config {
+  type: "table",
+  schema: "marts",
+  description: "Dimensão de catálogo de conteúdos educacionais (cursos, projetos, avaliações e trilhas).",
+  columns: {
+    content_id: "Identificador único do conteúdo no catálogo",
+    type: "Tipo do conteúdo (course, project, track, assessment)",
+    title: "Título do conteúdo educacional",
+    description: "Descrição detalhada do conteúdo",
+    url: "URL de acesso ao conteúdo",
+    technology: "Tecnologia principal associada (ex: Python, SQL, R)",
+    topic: "Tópico temático",
+    skill_level: "Nível de habilidade exigido",
+    hours: "Carga horária estimada",
+    state: "Estado do conteúdo no catálogo",
+    mobile: "Booleano indicando suporte em dispositivos móveis",
+    releasedat: "Timestamp de publicação",
+    lastupdatedat: "Timestamp da última atualização"
+  },
+  assertions: {
+    uniqueKey: ["content_id"],
+    nonNull: ["content_id"]
+  }
+}
+
+SELECT
+  id AS content_id,
+  type,
+  title,
+  description,
+  url,
+  technology,
+  topic,
+  skill_level,
+  hours,
+  state,
+  mobile,
+  releasedat,
+  lastupdatedat
+FROM ${ref("stg_content_catalog")}
+WHERE id IS NOT NULL

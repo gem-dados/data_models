@@ -1,15 +1,30 @@
 config {
-    type: "table",
-    description: "Normaliza raw.content_catalog. Padroniza strings e remove nulos críticos.",
-    assertions: {
-        nonNull: ["id"],
-        uniqueKey: ["id"]
-    }
+  type: "table",
+  description: "Normaliza raw.content_catalog. Catálogo de cursos, projetos e trilhas disponíveis.",
+  columns: {
+    id: "Identificador único do conteúdo no catálogo",
+    type: "Tipo do conteúdo (ex: course, project, track)",
+    title: "Título do conteúdo educacional",
+    description: "Descrição detalhada do conteúdo",
+    url: "URL de acesso ao conteúdo na plataforma",
+    technology: "Tecnologia principal associada (ex: Python, SQL, R)",
+    topic: "Tópico temático (ex: Data Engineering, Machine Learning)",
+    skill_level: "Nível de habilidade exigido (ex: Beginner, Intermediate, Advanced)",
+    hours: "Carga horária estimada em horas",
+    state: "Estado do conteúdo (ex: active, archived)",
+    mobile: "Booleano indicando suporte em dispositivos móveis",
+    releasedat: "Timestamp de publicação do conteúdo",
+    lastupdatedat: "Timestamp da última atualização do conteúdo",
+    loaded_at: "Timestamp de carga do registro na camada staging"
+  },
+  assertions: {
+    nonNull: ["id"],
+    uniqueKey: ["id"]
+  }
 }
 
 SELECT
-  -- Padronização de Strings
-  SAFE_CAST(id AS STRING) AS id,
+  TRIM(SAFE_CAST(id AS STRING)) AS id,
   TRIM(SAFE_CAST(type AS STRING)) AS type,
   TRIM(SAFE_CAST(title AS STRING)) AS title,
   TRIM(SAFE_CAST(description AS STRING)) AS description,
@@ -25,6 +40,6 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM
   ${ref("raw_content_catalog")}
-  -- Remoção de valores nulos críticos
 WHERE
   id IS NOT NULL
+  AND TRIM(SAFE_CAST(id AS STRING)) <> ""
