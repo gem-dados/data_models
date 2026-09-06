@@ -9,7 +9,7 @@ config {
 
 SELECT
   -- Padronização de Strings
-  SAFE_CAST(eventtime AS TIMESTAMP) AS eventtime,
+  SAFE_CAST(REGEXP_REPLACE(eventtime, r'\.\d+Z$', 'Z') AS TIMESTAMP) AS eventtime,
   TRIM(SAFE_CAST(eventtype AS STRING)) AS eventtype,
   TRIM(SAFE_CAST(eventtargettype AS STRING)) AS eventtargettype,
   TRIM(SAFE_CAST(teamdata AS STRING)) AS teamdata,
