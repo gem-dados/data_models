@@ -35,23 +35,50 @@ base_trilhas AS (
   WHERE startedat IS NOT NULL
 ),
 
-semanas_distintas AS (
-  SELECT DISTINCT semana_inicio FROM base_cursos
+usuarios_ativos_semana AS (
+  SELECT semana_inicio, user_id FROM base_cursos
   UNION DISTINCT
-  SELECT DISTINCT semana_inicio FROM base_trilhas
+  SELECT semana_inicio, user_id FROM base_trilhas
+),
+
+metricas_alunos AS (
+  SELECT
+    semana_inicio,
+    COUNT(DISTINCT user_id) AS alunos_ativos_semana
+  FROM usuarios_ativos_semana
+  WHERE semana_inicio IS NOT NULL
+  GROUP BY semana_inicio
+),
+
+metricas_cursos AS (
+  SELECT
+    semana_inicio,
+    COALESCE(SUM(totalcoursexpearned), 0) AS xp_total_semana,
+    COUNTIF(is_completed = TRUE) AS cursos_concluidos_semana
+  FROM base_cursos
+  WHERE semana_inicio IS NOT NULL
+  GROUP BY semana_inicio
+),
+
+metricas_trilhas AS (
+  SELECT
+    semana_inicio,
+    COUNTIF(is_completed = TRUE) AS trilhas_concluidas_semana
+  FROM base_trilhas
+  WHERE semana_inicio IS NOT NULL
+  GROUP BY semana_inicio
 )
 
 SELECT
-  s.semana_inicio,
-  COUNT(DISTINCT c.user_id) AS alunos_ativos_semana,
-  COALESCE(SUM(c.totalcoursexpearned), 0) AS xp_total_semana,
-  ROUND(SAFE_DIVIDE(SUM(c.totalcoursexpearned), COUNT(DISTINCT c.user_id)), 2) AS media_xp_por_aluno_semana,
-  COUNTIF(c.is_completed = TRUE) AS cursos_concluidos_semana,
-  COUNTIF(t.is_completed = TRUE) AS trilhas_concluidas_semana
-FROM semanas_distintas s
-LEFT JOIN base_cursos c
-  ON s.semana_inicio = c.semana_inicio
-LEFT JOIN base_trilhas t
-  ON s.semana_inicio = t.semana_inicio
-WHERE s.semana_inicio IS NOT NULL
-GROUP BY s.semana_inicio
+  a.semana_inicio,
+  a.alunos_ativos_semana,
+  COALESCE(c.xp_total_semana, 0) AS xp_total_semana,
+  ROUND(SAFE_DIVIDE(COALESCE(c.xp_total_semana, 0), a.alunos_ativos_semana), 2) AS media_xp_por_aluno_semana,
+  COALESCE(c.cursos_concluidos_semana, 0) AS cursos_concluidos_semana,
+  COALESCE(t.trilhas_concluidas_semana, 0) AS trilhas_concluidas_semana
+FROM metricas_alunos a
+LEFT JOIN metricas_cursos c
+  ON a.semana_inicio = c.semana_inicio
+LEFT JOIN metricas_trilhas t
+  ON a.semana_inicio = t.semana_inicio
+ORDER BY a.semana_inicio ASC

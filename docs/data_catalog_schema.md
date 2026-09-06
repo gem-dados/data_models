@@ -108,8 +108,8 @@ flowchart TD
 
 | Coluna | Tipo BigQuery | Chave | Descrição |
 |---|---|---|---|
-| `user_id` | STRING | **FK** | Identificador do aluno (relaciona com `dim_usuarios`) |
-| `course_id` | INT64 | **FK** | Identificador do curso (relaciona com `dim_conteudo`) |
+| `user_id` | STRING | **FK** | Identificador do aluno (relaciona com `dim_usuarios.user_id`) |
+| `course_id` | INT64 | **FK** | Identificador do curso (relaciona com `dim_conteudo.content_id` via `CAST(course_id AS STRING)`) |
 | `coursename` | STRING | | Nome completo do curso |
 | `technology` | STRING | | Tecnologia principal do curso |
 | `startedcourse` | TIMESTAMP | | Timestamp de início do curso pelo aluno |

@@ -5,9 +5,7 @@
 WITH cohort_alunos AS (
   SELECT
     user_id,
-    DATE_TRUNC(DATE(dateuserjoinedgroup), MONTH) AS cohort_month,
-    dateuserleftgroup,
-    user_status
+    DATE_TRUNC(DATE(dateuserjoinedgroup), MONTH) AS cohort_month
   FROM `gem-dados-lake-prd.marts.dim_usuarios`
   WHERE dateuserjoinedgroup IS NOT NULL
 ),
@@ -37,7 +35,11 @@ SELECT
   ROUND(
     SAFE_DIVIDE(COUNT(DISTINCT a.user_id) * 100.0, s.total_alunos_cohort),
     2
-  ) AS taxa_retencao_pct
+  ) AS taxa_retencao_pct,
+  ROUND(
+    100.0 - SAFE_DIVIDE(COUNT(DISTINCT a.user_id) * 100.0, s.total_alunos_cohort),
+    2
+  ) AS taxa_churn_pct
 FROM cohort_alunos c
 JOIN cohort_tamanho s
   ON c.cohort_month = s.cohort_month

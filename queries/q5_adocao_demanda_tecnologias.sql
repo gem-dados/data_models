@@ -19,7 +19,7 @@ certificacoes_por_tech AS (
     CASE
       WHEN LOWER(certificationname) LIKE "%python%" THEN "Python"
       WHEN LOWER(certificationname) LIKE "%sql%" THEN "SQL"
-      WHEN LOWER(certificationname) LIKE "%r%" THEN "R"
+      WHEN REGEXP_CONTAINS(LOWER(certificationname), r'\br\b') THEN "R"
       WHEN LOWER(certificationname) LIKE "%data%" THEN "Data Science / Analytics"
       ELSE "Geral / Outros"
     END AS tecnologia,
