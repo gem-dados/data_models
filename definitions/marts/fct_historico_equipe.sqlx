@@ -1,25 +1,26 @@
 config {
   type: "table",
   schema: "marts",
-  description: "Tabela Fato de movimentação de usuários e eventos de turmas/equipes.",
+  description: "Tabela Fato de movimentação de usuários e eventos de turmas/equipes. Grão: 1 linha por evento de usuário em equipe.",
   columns: {
+    user_id: "Chave Estrangeira: Identificador único anonimizado do aluno",
     eventtime: "Timestamp do evento ocorrido",
     eventtype: "Tipo do evento (ex: UserJoinedTeam, UserLeftTeam)",
     eventtargettype: "Alvo do evento",
-    teamdata: "Identificador ou dados da equipe",
-    userdata: "Identificador ou dados do usuário"
+    teamdata: "Identificador ou dados da equipe"
   },
   assertions: {
-    nonNull: ["userdata", "eventtime", "eventtype"]
+    nonNull: ["user_id", "eventtime", "eventtype"]
   }
 }
 
 SELECT
+  user_id,
   eventtime,
   eventtype,
   eventtargettype,
-  teamdata,
-  userdata
+  teamdata
 FROM ${ref("stg_team_history")}
-WHERE userdata IS NOT NULL
+WHERE user_id IS NOT NULL
   AND eventtime IS NOT NULL
+
