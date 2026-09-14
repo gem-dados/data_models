@@ -245,9 +245,21 @@ flowchart TD
 | `numprojectscompleted` | INT64 | | Projetos concluídos |
 | `numassessmentscompleted` | INT64 | | Avaliações concluídas |
 
+### 3.10 `marts.fct_historico_equipe`
+- **Descrição:** Tabela Fato de movimentação de usuários e eventos de turmas/equipes da organização.
+- **Grão:** 1 linha por evento de movimentação do aluno em equipe (`user_id`, `eventtime`, `eventtype`).
+
+| Coluna | Tipo BigQuery | Chave | Descrição |
+|---|---|---|---|
+| `user_id` | STRING | **FK** | Identificador único anonimizado do aluno (relaciona com `dim_usuarios.user_id`) |
+| `eventtime` | TIMESTAMP | | Timestamp do evento ocorrido |
+| `eventtype` | STRING | | Tipo do evento (ex: UserJoinedTeam, UserLeftTeam) |
+| `eventtargettype` | STRING | | Alvo do evento (ex: user, team) |
+| `teamdata` | STRING | | Identificador ou dados da equipe |
+
 ---
 
-### 3.10 `marts.mart_metricas_semanais`
+### 3.11 `marts.mart_metricas_semanais`
 - **Descrição:** Camada semântica de métricas analíticas calculadas por semana de atividade para BI.
 - **Grão:** 1 linha por semana (`semana_inicio`).
 

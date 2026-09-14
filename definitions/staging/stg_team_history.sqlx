@@ -1,42 +1,43 @@
 config {
   type: "table",
-  description: "Normaliza raw.team_history. Histórico de eventos e alterações nas equipes da organização.",
+  description: "Normaliza raw.team_history. Histórico de eventos e alterações nas equipes da organização, 100% livre de PII.",
   columns: {
+    user_id: "Identificador único anonimizado do usuário envolvido no evento (SHA-256)",
     eventtime: "Timestamp do evento ocorrido na equipe",
     eventtype: "Tipo do evento (ex: added, removed, role_changed)",
     eventtargettype: "Tipo de alvo do evento (ex: user, team)",
     teamdata: "Identificador ou dados da equipe relacionada",
-    userdata: "Identificador ou dados do usuário envolvido no evento",
     loaded_at: "Timestamp de carga do registro na camada staging"
   },
   assertions: {
-    nonNull: ["userdata", "eventtime", "eventtype"],
-    uniqueKey: ["userdata", "eventtime", "eventtype"]
+    nonNull: ["user_id", "eventtime", "eventtype"],
+    uniqueKey: ["user_id", "eventtime", "eventtype"]
   }
 }
 
 WITH cleaned AS (
   SELECT
+    TRIM(SAFE_CAST(user_id AS STRING)) AS user_id,
     SAFE_CAST(REGEXP_REPLACE(eventtime, r'\.\d+Z$', 'Z') AS TIMESTAMP) AS eventtime,
     TRIM(SAFE_CAST(eventtype AS STRING)) AS eventtype,
     TRIM(SAFE_CAST(eventtargettype AS STRING)) AS eventtargettype,
     TRIM(SAFE_CAST(teamdata AS STRING)) AS teamdata,
-    TRIM(SAFE_CAST(userdata AS STRING)) AS userdata,
     CURRENT_TIMESTAMP() AS loaded_at
   FROM
     ${ref("raw_team_history")}
 )
 
 SELECT
+  user_id,
   eventtime,
   eventtype,
   eventtargettype,
   teamdata,
-  userdata,
   loaded_at
 FROM
   cleaned
 WHERE
-  userdata IS NOT NULL
-  AND TRIM(userdata) <> ""
+  user_id IS NOT NULL
+  AND TRIM(user_id) <> ""
   AND eventtime IS NOT NULL
+

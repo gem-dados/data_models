@@ -135,8 +135,8 @@ WITH row_counts AS (
     (
       SELECT COUNT(*)
       FROM ${ref("raw_team_history")}
-      WHERE userdata IS NOT NULL
-        AND TRIM(userdata) <> ""
+      WHERE user_id IS NOT NULL
+        AND TRIM(user_id) <> ""
         AND eventtime IS NOT NULL
     ),
     (
